@@ -3,6 +3,7 @@
   background-color: #1F1F21;
   color: #FFF;
 
+  /* Верхня частина заголовка */
   .header-top {
     display: flex;
     justify-content: center;
@@ -16,6 +17,7 @@
       max-width: 1200px;
       width: 100%;
 
+      /* Ліва частина заголовка */
       .header-left {
         display: flex;
         align-items: center;
@@ -45,11 +47,13 @@
           }
         }
       }
+
+      /* Права частина заголовка */
       .header-right {
         display: flex;
         align-items: center;
         gap: 20px;
-        
+
         .favorites-icon,
         .cart-icon {
           position: relative;
@@ -106,6 +110,7 @@
     }
   }
 
+  /* Категорії у заголовку */
   .header-categories {
     background-color: #EFF0F2;
 
@@ -119,7 +124,6 @@
       nav {
         display: flex;
         gap: 30px;
-        margin-left: 5cm; /* Зсув тексту меню вправо */
 
         a {
           text-transform: uppercase;
@@ -135,6 +139,7 @@
     }
   }
 
+  /* Меню на мобільних пристроях */
   .menu-container {
     position: fixed;
     top: 0;
@@ -181,6 +186,7 @@
     }
   }
 
+  /* Анімація для мобільного меню */
   @keyframes slide-in {
     from {
       transform: translateX(-100%);

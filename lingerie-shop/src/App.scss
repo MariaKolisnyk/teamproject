@@ -8,10 +8,8 @@
 .App-logo {
   height: 40vmin;
   pointer-events: none;
-}
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
+  @media (prefers-reduced-motion: no-preference) {
     animation: App-logo-spin infinite 20s linear;
   }
 }
@@ -41,7 +39,7 @@
   }
 }
 
-/* Стилі футера */
+/* Футер */
 .footer {
   background-color: rgba(0, 0, 0, 0); /* Прозорий фон */
   color: #000; /* Чорний текст */
@@ -49,18 +47,42 @@
   padding: 20px;
   font-size: 14px;
   margin-top: auto; /* Відштовхує футер донизу */
+
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 10px;
+  }
+
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+
+    img {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.2);
+      }
+    }
+  }
 }
 
-.footer-content {
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 20px;
-  padding: 10px;
-}
+/* Додаткові стилі для адаптивності */
+@media (max-width: 768px) {
+  .footer-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
 
-.social-icons img {
-  width: 20px;
-  height: 20px;
-  margin: 0 8px;
+  .social-icons img {
+    margin: 0 4px;
+  }
 }

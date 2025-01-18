@@ -21,13 +21,17 @@ export const initialCategories: Category[] = [
   { id: 10, name: 'Individual Tailoring' },
 ];
 
-// Компонент категорій
-const CategoryList: React.FC = () => {
+// Приймає категорії як пропси
+interface CategoryListProps {
+  categories?: Category[]; // Категорії, які можна передати (опціонально)
+}
+
+const CategoryList: React.FC<CategoryListProps> = ({ categories = initialCategories }) => {
   return (
     <div className="category-list">
       <h2>Categories</h2>
       <ul>
-        {initialCategories.map((category) => (
+        {categories.map((category) => (
           <li key={category.id}>
             <Link to={`/category/${category.id}`} className="category-link">
               {category.name}

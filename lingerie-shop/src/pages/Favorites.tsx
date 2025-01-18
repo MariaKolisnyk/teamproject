@@ -8,22 +8,27 @@ const Favorites: React.FC = () => {
   return (
     <div className="favorites-page">
       <h2>Your Favorites</h2>
-      <div className="favorites-grid">
-        {favorites.length > 0 ? (
-          favorites.map((product) => (
+      {favorites.length > 0 ? (
+        <div className="favorites-grid">
+          {favorites.map((product) => (
             <div key={product.id} className="favorite-card">
-              <img src={product.image} alt={product.name} />
+              <img src={product.image} alt={product.name} className="favorite-image" />
               <div className="favorite-info">
-                <p>{product.name}</p>
-                <p>${product.price}</p>
+                <p className="favorite-name">{product.name}</p>
+                <p className="favorite-price">${product.price.toFixed(2)}</p>
               </div>
-              <button onClick={() => removeFromFavorites(product.id)}>Remove</button>
+              <button
+                className="remove-button"
+                onClick={() => removeFromFavorites(product.id)}
+              >
+                Remove
+              </button>
             </div>
-          ))
-        ) : (
-          <p>No favorites added yet!</p>
-        )}
-      </div>
+          ))}
+        </div>
+      ) : (
+        <p className="empty-message">No favorites added yet!</p>
+      )}
     </div>
   );
 };

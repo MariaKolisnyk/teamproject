@@ -1,3 +1,5 @@
-const API_BASE_URL = 'http://localhost:5000'; // Заміни на реальний URL бекенду, якщо потрібно
+// src/config.ts
 
-export default API_BASE_URL;
+// Заміна базового URL для локального API
+
+export const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://127.0.0.1:8080/api/v1';

@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
+import { useCart } from '../store/CartContext';
 import './ProductPage.scss';
-import axios from 'axios';
-
-import BASE_URL from '../config';
-
+import axiosInstance from '../utils/axiosInstance';
 
 interface Product {
   id: number;
@@ -28,19 +26,31 @@ interface Review {
 }
 
 const ProductPage: React.FC = () => {
-  const { productId } = useParams();
+  const { productId } = useParams<{ productId: string }>();
   const [product, setProduct] = useState<Product | null>(null);
   const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
-    axios
-      .get(`${BASE_URL}/api/v1/products/${productId}`)
-      .then((response) => setProduct(response.data))
-      .catch((err) => {
+    const fetchProduct = async () => {
+      try {
+        const response = await axiosInstance.get<Product>(`/products/${productId}`);
+        setProduct(response.data);
+        setSelectedColor(response.data.colorOptions[0]); // Вибираємо перший колір за замовчуванням
+        setSelectedSize(response.data.sizes[0]); // Вибираємо перший розмір за замовчуванням
+      } catch (err) {
         console.error('Error fetching product:', err);
         setError('Failed to load product. Please try again.');
-      });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [productId]);
 
   const handleQuantityChange = (operation: 'increment' | 'decrement') => {
@@ -49,12 +59,32 @@ const ProductPage: React.FC = () => {
     );
   };
 
+  const handleAddToCart = () => {
+    if (!selectedColor || !selectedSize) {
+      setError('Please select a color and size before adding to cart.');
+      return;
+    }
+    if (product) {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity,
+      });
+    }
+  };
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   if (error) {
     return <div className="error-message">{error}</div>;
   }
 
   if (!product) {
-    return <div>Loading...</div>;
+    return null;
   }
 
   return (
@@ -73,9 +103,10 @@ const ProductPage: React.FC = () => {
             {product.colorOptions.map((color, index) => (
               <img
                 key={index}
-                src={`${BASE_URL}/images/products/${color}.png`}
+                src={`/assets/images/products/${color}.png`}
                 alt={`Thumbnail ${color}`}
-                className="thumbnail"
+                className={`thumbnail ${selectedColor === color ? 'active' : ''}`}
+                onClick={() => setSelectedColor(color)}
               />
             ))}
           </div>
@@ -83,7 +114,7 @@ const ProductPage: React.FC = () => {
         </div>
 
         <div className="product-details">
-          <h1>{product.name.toUpperCase()}</h1>
+          <h1>{product.name}</h1>
           <p className="product-code">Code: {product.id}</p>
 
           <div className="product-colors">
@@ -92,8 +123,9 @@ const ProductPage: React.FC = () => {
               {product.colorOptions.map((color, index) => (
                 <span
                   key={index}
-                  className="color-dot"
+                  className={`color-dot ${selectedColor === color ? 'active' : ''}`}
                   style={{ backgroundColor: color }}
+                  onClick={() => setSelectedColor(color)}
                 ></span>
               ))}
             </div>
@@ -103,7 +135,11 @@ const ProductPage: React.FC = () => {
             <h4>Size</h4>
             <div className="size-options">
               {product.sizes.map((size, index) => (
-                <span key={index} className="size-option">
+                <span
+                  key={index}
+                  className={`size-option ${selectedSize === size ? 'active' : ''}`}
+                  onClick={() => setSelectedSize(size)}
+                >
                   {size}
                 </span>
               ))}
@@ -121,25 +157,15 @@ const ProductPage: React.FC = () => {
             <button onClick={() => handleQuantityChange('increment')}>+</button>
           </div>
 
-          <button className="add-to-cart-button">ADD TO CART</button>
+          <button className="add-to-cart-button" onClick={handleAddToCart}>
+            ADD TO CART
+          </button>
         </div>
       </div>
 
       <div className="product-description">
         <h3>Description</h3>
         <p>{product.description}</p>
-      </div>
-
-      <div className="reviews">
-        <h3>Reviews ({product.reviews.length})</h3>
-        {product.reviews.slice(0, 2).map((review, index) => (
-          <div key={index} className="review">
-            <p>{review.comment}</p>
-            <span>
-              <strong>{review.name}</strong> - {review.date}
-            </span>
-          </div>
-        ))}
       </div>
     </div>
   );

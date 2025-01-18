@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import axios from '../utils/axiosInstance';
 
 interface Product {
   id: number;
@@ -13,6 +14,7 @@ interface CartContextType {
   addToCart: (product: Product) => void;
   removeFromCart: (productId: number) => void;
   clearCart: () => void;
+  fetchCart: () => void; // Нова функція для завантаження кошика з бекенда
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -20,32 +22,56 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: ReactNode }) => {
   const [cart, setCart] = useState<Product[]>([]);
 
-  const addToCart = (product: Product) => {
-    setCart((prev) => {
-      const existingProduct = prev.find((item) => item.id === product.id);
-      if (existingProduct) {
-        // Якщо продукт вже в корзині, збільшуємо його кількість
-        return prev.map((item) =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      // Якщо продукт ще немає в корзині, додаємо його
-      return [...prev, { ...product, quantity: 1 }];
-    });
+  // Завантаження кошика з бекенда
+  const fetchCart = async () => {
+    try {
+      const response = await axios.get('/cart/');
+      setCart(response.data);
+    } catch (error) {
+      console.error('Failed to fetch cart:', error);
+    }
   };
 
-  const removeFromCart = (productId: number) => {
-    setCart((prev) => prev.filter((item) => item.id !== productId));
+  // Додавання товару до кошика
+  const addToCart = async (product: Product) => {
+    try {
+      const response = await axios.post('/cart/add/', {
+        productId: product.id,
+        quantity: 1, // Збільшуємо кількість на 1
+      });
+      setCart(response.data); // Оновлюємо кошик на основі відповіді бекенда
+    } catch (error) {
+      console.error('Failed to add product to cart:', error);
+    }
   };
 
-  const clearCart = () => {
-    setCart([]);
+  // Видалення товару з кошика
+  const removeFromCart = async (productId: number) => {
+    try {
+      const response = await axios.delete(`/cart/${productId}/`);
+      setCart(response.data); // Оновлюємо кошик на основі відповіді бекенда
+    } catch (error) {
+      console.error('Failed to remove product from cart:', error);
+    }
   };
+
+  // Очищення кошика
+  const clearCart = async () => {
+    try {
+      await axios.delete('/cart/');
+      setCart([]);
+    } catch (error) {
+      console.error('Failed to clear cart:', error);
+    }
+  };
+
+  // Завантаження кошика при першому рендері
+  useEffect(() => {
+    fetchCart();
+  }, []);
 
   return (
-    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cart, addToCart, removeFromCart, clearCart, fetchCart }}>
       {children}
     </CartContext.Provider>
   );

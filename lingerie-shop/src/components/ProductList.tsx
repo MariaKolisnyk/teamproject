@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance';
+import { useCart } from '../store/CartContext'; // Контекст для додавання в кошик
 import './ProductList.scss';
 
 interface Product {
@@ -14,12 +15,13 @@ const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const { addToCart } = useCart(); // Функція додавання до кошика
 
   // Отримання даних з бекенду
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/products');
+        const response = await axiosInstance.get<Product[]>('/products');
         setProducts(response.data);
       } catch (err) {
         setError('Failed to fetch products. Please try again.');
@@ -32,7 +34,12 @@ const ProductList: React.FC = () => {
   }, []);
 
   if (isLoading) {
-    return <div>Loading products...</div>;
+    return (
+      <div className="loading">
+        <div className="spinner"></div>
+        <p>Loading products...</p>
+      </div>
+    );
   }
 
   if (error) {
@@ -49,7 +56,12 @@ const ProductList: React.FC = () => {
             <p className="product-description">{product.description}</p>
             <p className="product-price">${product.price.toFixed(2)}</p>
           </div>
-          <button className="add-to-cart-button">Add to Cart</button>
+          <button
+            className="add-to-cart-button"
+            onClick={() => addToCart(product)}
+          >
+            Add to Cart
+          </button>
         </div>
       ))}
     </div>

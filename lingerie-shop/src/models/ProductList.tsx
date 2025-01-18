@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance'; // Використовуємо конфігурований axios
 import './Product.scss';
 
 // Інтерфейси для типізації продуктів
 export interface Product {
-    id: number;
-    name: string;
-    price: number;
-    imageUrl: string; // Переконайтесь, що це поле є
-    category: string;
-    quantity?: number; // Якщо потрібно для кошика
-  }
-  
+  id: number;
+  name: string;
+  price: number;
+  imageUrl: string;
+  category: string;
+  quantity?: number; // Поле для кошика
+}
 
-export interface ProductGetRequest {
+// Відповідь від API
+export interface ProductGetResponse {
   id: number;
   name: string;
   price: number;
@@ -21,33 +21,17 @@ export interface ProductGetRequest {
   category: string;
 }
 
-export interface ProductPutRequest {
-  name: string;
-  price: number;
-  imageUrl: string;
-  category: string;
-}
-
-export interface ProductResponse {
-  id: number;
-  name: string;
-  price: number;
-  imageUrl: string;
-  category: string;
-}
-
-// Головний компонент для відображення списку продуктів
 const ProductList: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Запит до бекенду для отримання списку продуктів
+  // Отримання списку продуктів
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get<ProductGetRequest[]>('/api/v1/products');
-        const mappedProducts = response.data.map((product) => ({
+        const response = await axiosInstance.get<ProductGetResponse[]>('/api/v1/products');
+        const mappedProducts: Product[] = response.data.map((product) => ({
           id: product.id,
           name: product.name,
           price: product.price,
@@ -56,8 +40,8 @@ const ProductList: React.FC = () => {
         }));
         setProducts(mappedProducts);
       } catch (err) {
-        setError('Failed to fetch products');
-        console.error(err);
+        console.error('Error fetching products:', err);
+        setError('Failed to fetch products. Please try again later.');
       } finally {
         setLoading(false);
       }
@@ -66,11 +50,11 @@ const ProductList: React.FC = () => {
     fetchProducts();
   }, []);
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>{error}</div>;
+  if (loading) return <div className="loading">Loading products...</div>;
+  if (error) return <div className="error-message">{error}</div>;
 
   return (
-    <div className="product-list">
+    <div className="product">
       <h1>Our Products</h1>
       <div className="products-grid">
         {products.map((product) => (

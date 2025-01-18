@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import './Breadcrumb.scss';
 
 interface BreadcrumbProps {
-  paths: { label: string; path: string }[];
+  paths: { label: string; path?: string }[]; // `path` може бути необов'язковим
 }
 
 const Breadcrumb: React.FC<BreadcrumbProps> = ({ paths }) => {
@@ -11,7 +11,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({ paths }) => {
     <nav aria-label="breadcrumb" className="breadcrumb">
       {paths.map((path, index) => (
         <span key={index} className="breadcrumb-item">
-          {index < paths.length - 1 ? (
+          {path.path && index < paths.length - 1 ? (
             <>
               <Link to={path.path}>{path.label}</Link>
               <span className="breadcrumb-separator">•</span>

@@ -12,7 +12,7 @@
     a {
       color: #868f9b;
       text-decoration: none;
-      transition: color 0.3s, text-decoration 0.3s;
+      transition: color 0.3s ease, text-decoration 0.3s ease;
 
       &:hover {
         color: #1f1f21;

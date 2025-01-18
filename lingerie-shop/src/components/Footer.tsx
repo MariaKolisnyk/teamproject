@@ -2,27 +2,27 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.scss';
 
-const Footer = () => {
+const Footer: React.FC = () => {
   return (
     <footer className="footer">
       <div className="footer-content">
         {/* Логотип і контакти */}
         <div className="footer-section contact-info">
-          <img src="/images/LOGO1.png" alt="Lingerie Logo" className="footer-logo" />
+          <img src={`${process.env.PUBLIC_URL}/images/LOGO1.png`} alt="Lingerie Logo" className="footer-logo" />
           <p className="hotline">Free hotline:</p>
           <p className="phone-number">8 888 888-88-88</p>
           <div className="social-icons" aria-label="Social media links">
-            <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer">
-              <img src="/images/youtube.png" alt="YouTube" />
+            <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
+              <img src={`${process.env.PUBLIC_URL}/images/youtube.png`} alt="YouTube" />
             </a>
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer">
-              <img src="/images/instagram.png" alt="Instagram" />
+            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+              <img src={`${process.env.PUBLIC_URL}/images/instagram.png`} alt="Instagram" />
             </a>
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer">
-              <img src="/images/facebook.png" alt="Facebook" />
+            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+              <img src={`${process.env.PUBLIC_URL}/images/facebook.png`} alt="Facebook" />
             </a>
-            <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer">
-              <img src="/images/twitter.png" alt="Twitter" />
+            <a href="https://www.twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+              <img src={`${process.env.PUBLIC_URL}/images/twitter.png`} alt="Twitter" />
             </a>
           </div>
         </div>
@@ -61,13 +61,16 @@ const Footer = () => {
         <div className="footer-section subscribe-section">
           <h4>SUBSCRIBE TO NEWS</h4>
           <p>Subscribe to receive news about trends, collections and new promotions.</p>
-          <input
-            type="email"
-            className="email-input"
-            placeholder="Enter your e-mail"
-            aria-label="Enter your email for subscription"
-          />
-          <button className="subscribe-button">SUBSCRIBE</button>
+          <form onSubmit={(e) => e.preventDefault()} aria-label="Subscription Form">
+            <input
+              type="email"
+              className="email-input"
+              placeholder="Enter your e-mail"
+              aria-label="Enter your email for subscription"
+              required
+            />
+            <button type="submit" className="subscribe-button">SUBSCRIBE</button>
+          </form>
         </div>
       </div>
 

@@ -1,223 +1,176 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
-import { getAllCategories, getColors, getSizes } from '../services/CategoryService'; // Додано запити для кольорів і розмірів
-import { searchProducts } from '../services/ProductService';
-import './CatalogPage.scss';
+import { useCart } from '../store/CartContext';
+import './ProductPage.scss';
+import axiosInstance from '../utils/axiosInstance';
 
-// Інтерфейси
 interface Product {
   id: number;
   name: string;
   image: string;
   price: number;
-}
-
-interface FilterOptions {
-  categories: string[];
-  colors: string[];
+  description: string;
+  laundryCare: string[];
+  colorOptions: string[];
   sizes: string[];
-  brands: string[];
+  rating: number;
+  reviews: Review[];
 }
 
-interface SelectedFilters {
-  categories: string[];
-  colors: string[];
-  sizes: string[];
-  brands: string[];
-  available: string;
-  priceRange: [number, number];
+interface Review {
+  name: string;
+  rating: number;
+  comment: string;
+  date: string;
 }
 
-const CatalogPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [filterOptions, setFilterOptions] = useState<FilterOptions>({
-    categories: [],
-    colors: [],
-    sizes: [],
-    brands: [],
-  });
-  const [selectedFilters, setSelectedFilters] = useState<SelectedFilters>({
-    categories: [],
-    colors: [],
-    sizes: [],
-    brands: [],
-    available: '',
-    priceRange: [100, 500],
-  });
+const ProductPage: React.FC = () => {
+  const { productId } = useParams<{ productId: string }>();
+  const [product, setProduct] = useState<Product | null>(null);
+  const [quantity, setQuantity] = useState(1);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const { addToCart } = useCart();
 
   useEffect(() => {
-    // Завантаження опцій фільтрів
-    getAllCategories().then((response) => {
-      setFilterOptions((prev) => ({
-        ...prev,
-        categories: response.data.map((cat: any) => cat.name),
-      }));
-    });
+    const fetchProduct = async () => {
+      try {
+        const response = await axiosInstance.get<Product>(`/products/${productId}`);
+        setProduct(response.data);
+        setSelectedColor(response.data.colorOptions[0]); // Вибираємо перший колір за замовчуванням
+        setSelectedSize(response.data.sizes[0]); // Вибираємо перший розмір за замовчуванням
+      } catch (err) {
+        console.error('Error fetching product:', err);
+        setError('Failed to load product. Please try again.');
+      } finally {
+        setIsLoading(false);
+      }
+    };
 
-    getColors().then((response) => {
-      setFilterOptions((prev) => ({
-        ...prev,
-        colors: response.data.map((color: any) => color.name),
-      }));
-    });
+    fetchProduct();
+  }, [productId]);
 
-    getSizes().then((response) => {
-      setFilterOptions((prev) => ({
-        ...prev,
-        sizes: response.data.map((size: any) => size.name),
-      }));
-    });
+  const handleQuantityChange = (operation: 'increment' | 'decrement') => {
+    setQuantity((prev) =>
+      operation === 'increment' ? prev + 1 : Math.max(1, prev - 1)
+    );
+  };
 
-    // Завантаження продуктів
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
-    setIsLoading(true);
-    try {
-      const response = await searchProducts(selectedFilters);
-      setProducts(response.data);
-    } catch (error) {
-      console.error('Failed to fetch products:', error);
-    } finally {
-      setIsLoading(false);
+  const handleAddToCart = () => {
+    if (!selectedColor || !selectedSize) {
+      setError('Please select a color and size before adding to cart.');
+      return;
+    }
+    if (product) {
+      addToCart({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        quantity,
+        color: selectedColor,
+        size: selectedSize,
+      });
     }
   };
 
-  const handleFilterChange = (
-    key: keyof SelectedFilters,
-    value: string | [number, number]
-  ) => {
-    setSelectedFilters((prev) => {
-      if (Array.isArray(prev[key])) {
-        const arrayValue = prev[key] as string[];
-        const updatedArray = arrayValue.includes(value as string)
-          ? arrayValue.filter((item) => item !== value)
-          : [...arrayValue, value as string];
-        return { ...prev, [key]: updatedArray };
-      }
-      return { ...prev, [key]: value };
-    });
-  };
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
-  const handleSaveFilters = () => {
-    fetchProducts();
-  };
+  if (error) {
+    return <div className="error-message">{error}</div>;
+  }
+
+  if (!product) {
+    return null;
+  }
 
   return (
-    <div className="catalog-page">
-      {/* Breadcrumb */}
+    <div className="product-page">
       <Breadcrumb
         paths={[
           { label: 'Home', path: '/' },
           { label: 'Catalog', path: '/catalog' },
+          { label: product.name, path: `/product/${product.id}` },
         ]}
       />
-      <h1 className="catalog-title">Catalog of Sets</h1>
-      <p className="catalog-subtitle">Found {products.length} products</p>
 
-      <div className="catalog-content">
-        {/* Filters */}
-        <aside className="filters">
-          <h3>Filters</h3>
-
-          {/* Categories */}
-          <div className="filter-section">
-            <h4>Categories</h4>
-            {filterOptions.categories.map((category) => (
-              <label key={category}>
-                <input
-                  type="checkbox"
-                  onChange={() => handleFilterChange('categories', category)}
-                  checked={selectedFilters.categories.includes(category)}
-                />
-                {category}
-              </label>
-            ))}
-          </div>
-
-          {/* Colors */}
-          <div className="filter-section">
-            <h4>Colors</h4>
-            {filterOptions.colors.map((color) => (
-              <label key={color}>
-                <input
-                  type="checkbox"
-                  onChange={() => handleFilterChange('colors', color)}
-                  checked={selectedFilters.colors.includes(color)}
-                />
-                {color}
-              </label>
-            ))}
-          </div>
-
-          {/* Sizes */}
-          <div className="filter-section">
-            <h4>Sizes</h4>
-            {filterOptions.sizes.map((size) => (
-              <label key={size}>
-                <input
-                  type="checkbox"
-                  onChange={() => handleFilterChange('sizes', size)}
-                  checked={selectedFilters.sizes.includes(size)}
-                />
-                {size}
-              </label>
-            ))}
-          </div>
-
-          {/* Price Range */}
-          <div className="filter-section">
-            <h4>Price</h4>
-            <div className="price-range">
-              <input
-                type="number"
-                value={selectedFilters.priceRange[0]}
-                onChange={(e) =>
-                  handleFilterChange('priceRange', [
-                    +e.target.value,
-                    selectedFilters.priceRange[1],
-                  ])
-                }
+      <div className="product-container">
+        <div className="product-images">
+          <div className="thumbnail-list">
+            {product.colorOptions.map((color, index) => (
+              <img
+                key={index}
+                src={`/assets/images/products/${color}.png`}
+                alt={`Thumbnail ${color}`}
+                className={`thumbnail ${selectedColor === color ? 'active' : ''}`}
+                onClick={() => setSelectedColor(color)}
               />
-              <span>-</span>
-              <input
-                type="number"
-                value={selectedFilters.priceRange[1]}
-                onChange={(e) =>
-                  handleFilterChange('priceRange', [
-                    selectedFilters.priceRange[0],
-                    +e.target.value,
-                  ])
-                }
-              />
+            ))}
+          </div>
+          <img src={product.image} alt={product.name} className="main-image" />
+        </div>
+
+        <div className="product-details">
+          <h1>{product.name}</h1>
+          <p className="product-code">Code: {product.id}</p>
+
+          <div className="product-colors">
+            <h4>Colour</h4>
+            <div className="color-options">
+              {product.colorOptions.map((color, index) => (
+                <span
+                  key={index}
+                  className={`color-dot ${selectedColor === color ? 'active' : ''}`}
+                  style={{ backgroundColor: color }}
+                  onClick={() => setSelectedColor(color)}
+                ></span>
+              ))}
             </div>
           </div>
 
-          {/* Save Filters Button */}
-          <button className="save-filters-button" onClick={handleSaveFilters}>
-            Apply Filters
-          </button>
-        </aside>
+          <div className="product-sizes">
+            <h4>Size</h4>
+            <div className="size-options">
+              {product.sizes.map((size, index) => (
+                <span
+                  key={index}
+                  className={`size-option ${selectedSize === size ? 'active' : ''}`}
+                  onClick={() => setSelectedSize(size)}
+                >
+                  {size}
+                </span>
+              ))}
+            </div>
+          </div>
 
-        {/* Product Grid */}
-        <section className="product-grid">
-          {isLoading ? (
-            <p>Loading products...</p>
-          ) : (
-            products.map((product) => (
-              <div key={product.id} className="product-card">
-                <img src={product.image} alt={product.name} />
-                <p className="product-name">{product.name}</p>
-                <p className="product-price">${product.price.toFixed(2)}</p>
-              </div>
-            ))
-          )}
-        </section>
+          <div className="product-price">
+            <h4>Price</h4>
+            <p>${product.price.toFixed(2)}</p>
+          </div>
+
+          <div className="quantity-selector">
+            <button onClick={() => handleQuantityChange('decrement')}>-</button>
+            <span>{quantity}</span>
+            <button onClick={() => handleQuantityChange('increment')}>+</button>
+          </div>
+
+          <button className="add-to-cart-button" onClick={handleAddToCart}>
+            ADD TO CART
+          </button>
+        </div>
+      </div>
+
+      <div className="product-description">
+        <h3>Description</h3>
+        <p>{product.description}</p>
       </div>
     </div>
   );
 };
 
-export default CatalogPage;
+export default ProductPage;

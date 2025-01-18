@@ -30,5 +30,17 @@
     justify-content: center;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); // Додає тінь
     transform: translate(50%, -50%); // Центрування бейджа
+    animation: pop-in 0.3s ease-in-out; // Додаємо анімацію при зміні
+  }
+
+  @keyframes pop-in {
+    0% {
+      transform: scale(0.8) translate(50%, -50%);
+      opacity: 0.5;
+    }
+    100% {
+      transform: scale(1) translate(50%, -50%);
+      opacity: 1;
+    }
   }
 }

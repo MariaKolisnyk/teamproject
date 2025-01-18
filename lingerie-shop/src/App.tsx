@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Layout from './Layout'; // Обгортка Layout
 import Homepage from './pages/Homepage';
@@ -11,27 +11,39 @@ import CheckoutPage from './pages/CheckoutPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import NotFound from './pages/NotFound';
+import MiniCart from './pages/MiniCart'; // Додаємо MiniCart
 import { FavoritesProvider } from './store/FavoritesContext';
 import { CartProvider } from './store/CartContext';
 
-const App = () => {
+const App: React.FC = () => {
+  const [isMiniCartOpen, setMiniCartOpen] = useState(false); // Стан для відкриття MiniCart
+
+  const toggleMiniCart = () => {
+    setMiniCartOpen((prev) => !prev); // Функція для перемикання стану MiniCart
+  };
+
   if (process.env.NODE_ENV === 'development') {
-    console.log('API URL:', process.env.REACT_APP_API_URL);
+    console.log('API URL:', process.env.REACT_APP_API_URL); // Логування URL API у режимі розробки
   }
 
   return (
-    <FavoritesProvider>
-      <CartProvider>
+    <FavoritesProvider> {/* Контекст для роботи з обраними товарами */}
+      <CartProvider> {/* Контекст для роботи з кошиком */}
         <Router>
+          {/* Відображення MiniCart за умовою */}
+          {isMiniCartOpen && <MiniCart onClose={toggleMiniCart} />}
           <Routes>
+            {/* Головна сторінка */}
             <Route
               path="/"
               element={
                 <Layout>
-                  <Homepage />
+            
+                  <Homepage toggleMiniCart={toggleMiniCart} /> {/* Передаємо toggleMiniCart */}
                 </Layout>
               }
             />
+            {/* Сторінка входу */}
             <Route
               path="/sign-in"
               element={
@@ -40,6 +52,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Сторінка реєстрації */}
             <Route
               path="/sign-up"
               element={
@@ -48,6 +61,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Сторінка пошуку */}
             <Route
               path="/search"
               element={
@@ -56,6 +70,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Профіль користувача */}
             <Route
               path="/profile"
               element={
@@ -64,6 +79,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Сторінка обраного */}
             <Route
               path="/favorites"
               element={
@@ -72,6 +88,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Сторінка кошика */}
             <Route
               path="/cart"
               element={
@@ -80,6 +97,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Каталог товарів */}
             <Route
               path="/catalog"
               element={
@@ -88,6 +106,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Сторінка оформлення замовлення */}
             <Route
               path="/checkout"
               element={
@@ -96,6 +115,7 @@ const App = () => {
                 </Layout>
               }
             />
+            {/* Сторінка 404 */}
             <Route
               path="*"
               element={
