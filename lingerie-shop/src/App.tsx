@@ -11,7 +11,7 @@ import CheckoutPage from './pages/CheckoutPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import NotFound from './pages/NotFound';
-import MiniCart from './pages/MiniCart'; // Додаємо MiniCart
+import MiniCart from './components/MiniCart'; // Додаємо MiniCart
 import { FavoritesProvider } from './store/FavoritesContext';
 import { CartProvider } from './store/CartContext';
 
@@ -27,23 +27,19 @@ const App: React.FC = () => {
   }
 
   return (
-    <FavoritesProvider> {/* Контекст для роботи з обраними товарами */}
-      <CartProvider> {/* Контекст для роботи з кошиком */}
+    <FavoritesProvider>
+      <CartProvider>
         <Router>
-          {/* Відображення MiniCart за умовою */}
-          {isMiniCartOpen && <MiniCart onClose={toggleMiniCart} />}
+          {isMiniCartOpen && <MiniCart onClose={toggleMiniCart} />} {/* Перевіряємо відкриття MiniCart */}
           <Routes>
-            {/* Головна сторінка */}
             <Route
               path="/"
               element={
                 <Layout>
-            
-                  <Homepage toggleMiniCart={toggleMiniCart} /> {/* Передаємо toggleMiniCart */}
+                  <Homepage /> {/* Видалено toggleMiniCart, оскільки він не використовується */}
                 </Layout>
               }
             />
-            {/* Сторінка входу */}
             <Route
               path="/sign-in"
               element={
@@ -52,7 +48,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Сторінка реєстрації */}
             <Route
               path="/sign-up"
               element={
@@ -61,7 +56,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Сторінка пошуку */}
             <Route
               path="/search"
               element={
@@ -70,7 +64,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Профіль користувача */}
             <Route
               path="/profile"
               element={
@@ -79,7 +72,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Сторінка обраного */}
             <Route
               path="/favorites"
               element={
@@ -88,7 +80,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Сторінка кошика */}
             <Route
               path="/cart"
               element={
@@ -97,7 +88,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Каталог товарів */}
             <Route
               path="/catalog"
               element={
@@ -106,7 +96,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Сторінка оформлення замовлення */}
             <Route
               path="/checkout"
               element={
@@ -115,7 +104,6 @@ const App: React.FC = () => {
                 </Layout>
               }
             />
-            {/* Сторінка 404 */}
             <Route
               path="*"
               element={

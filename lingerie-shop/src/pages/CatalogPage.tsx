@@ -1,176 +1,185 @@
 import React, { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
-import Breadcrumb from '../components/Breadcrumb';
+import { Link } from 'react-router-dom';
+import './CatalogPage.scss';
+import { useFavorites } from '../store/FavoritesContext';
 import { useCart } from '../store/CartContext';
-import './ProductPage.scss';
 import axiosInstance from '../utils/axiosInstance';
 
 interface Product {
   id: number;
   name: string;
-  image: string;
+  imageUrl: string;
   price: number;
-  description: string;
-  laundryCare: string[];
-  colorOptions: string[];
-  sizes: string[];
-  rating: number;
-  reviews: Review[];
+  isAvailable: boolean;
+  brand: string;
+  size: string;
+  color: string;
 }
 
-interface Review {
-  name: string;
-  rating: number;
-  comment: string;
-  date: string;
-}
+const CatalogPage: React.FC = () => {
+  const [products, setProducts] = useState<Product[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [filters, setFilters] = useState({
+    brand: '',
+    color: '',
+    size: '',
+    availability: '',
+  });
 
-const ProductPage: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>();
-  const [product, setProduct] = useState<Product | null>(null);
-  const [quantity, setQuantity] = useState(1);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
-  const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const fetchProduct = async () => {
+    const fetchProducts = async () => {
       try {
-        const response = await axiosInstance.get<Product>(`/products/${productId}`);
-        setProduct(response.data);
-        setSelectedColor(response.data.colorOptions[0]); // Вибираємо перший колір за замовчуванням
-        setSelectedSize(response.data.sizes[0]); // Вибираємо перший розмір за замовчуванням
-      } catch (err) {
-        console.error('Error fetching product:', err);
-        setError('Failed to load product. Please try again.');
-      } finally {
-        setIsLoading(false);
+        const response = await axiosInstance.get<Product[]>('/products');
+        setProducts(response.data);
+        setFilteredProducts(response.data);
+      } catch (error) {
+        console.error('Failed to fetch products:', error);
       }
     };
 
-    fetchProduct();
-  }, [productId]);
+    fetchProducts();
+  }, []);
 
-  const handleQuantityChange = (operation: 'increment' | 'decrement') => {
-    setQuantity((prev) =>
-      operation === 'increment' ? prev + 1 : Math.max(1, prev - 1)
-    );
+  const applyFilters = () => {
+    let filtered = [...products];
+
+    if (filters.brand) {
+      filtered = filtered.filter((product) => product.brand === filters.brand);
+    }
+
+    if (filters.color) {
+      filtered = filtered.filter((product) => product.color === filters.color);
+    }
+
+    if (filters.size) {
+      filtered = filtered.filter((product) => product.size === filters.size);
+    }
+
+    if (filters.availability === 'available') {
+      filtered = filtered.filter((product) => product.isAvailable);
+    }
+
+    if (filters.availability === 'not-available') {
+      filtered = filtered.filter((product) => !product.isAvailable);
+    }
+
+    setFilteredProducts(filtered);
   };
 
-  const handleAddToCart = () => {
-    if (!selectedColor || !selectedSize) {
-      setError('Please select a color and size before adding to cart.');
-      return;
-    }
-    if (product) {
-      addToCart({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        image: product.image,
-        quantity,
-        color: selectedColor,
-        size: selectedSize,
-      });
+  const handleFavoriteToggle = (product: Product) => {
+    if (favorites.some((fav) => fav.id === product.id)) {
+      removeFromFavorites(product.id);
+    } else {
+      addToFavorites(product);
     }
   };
-
-  if (isLoading) {
-    return <div>Loading...</div>;
-  }
-
-  if (error) {
-    return <div className="error-message">{error}</div>;
-  }
-
-  if (!product) {
-    return null;
-  }
 
   return (
-    <div className="product-page">
-      <Breadcrumb
-        paths={[
-          { label: 'Home', path: '/' },
-          { label: 'Catalog', path: '/catalog' },
-          { label: product.name, path: `/product/${product.id}` },
-        ]}
-      />
+    <div className="catalog-page">
+      <div className="filters">
+        <h3>Filters</h3>
 
-      <div className="product-container">
-        <div className="product-images">
-          <div className="thumbnail-list">
-            {product.colorOptions.map((color, index) => (
-              <img
-                key={index}
-                src={`/assets/images/products/${color}.png`}
-                alt={`Thumbnail ${color}`}
-                className={`thumbnail ${selectedColor === color ? 'active' : ''}`}
-                onClick={() => setSelectedColor(color)}
-              />
-            ))}
-          </div>
-          <img src={product.image} alt={product.name} className="main-image" />
+        <div className="filter-section">
+          <h4>Brand</h4>
+          <select
+            onChange={(e) => setFilters((prev) => ({ ...prev, brand: e.target.value }))}
+          >
+            <option value="">All</option>
+            <option value="Brand A">Brand A</option>
+            <option value="Brand B">Brand B</option>
+          </select>
         </div>
 
-        <div className="product-details">
-          <h1>{product.name}</h1>
-          <p className="product-code">Code: {product.id}</p>
-
-          <div className="product-colors">
-            <h4>Colour</h4>
-            <div className="color-options">
-              {product.colorOptions.map((color, index) => (
-                <span
-                  key={index}
-                  className={`color-dot ${selectedColor === color ? 'active' : ''}`}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setSelectedColor(color)}
-                ></span>
-              ))}
-            </div>
-          </div>
-
-          <div className="product-sizes">
-            <h4>Size</h4>
-            <div className="size-options">
-              {product.sizes.map((size, index) => (
-                <span
-                  key={index}
-                  className={`size-option ${selectedSize === size ? 'active' : ''}`}
-                  onClick={() => setSelectedSize(size)}
-                >
-                  {size}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div className="product-price">
-            <h4>Price</h4>
-            <p>${product.price.toFixed(2)}</p>
-          </div>
-
-          <div className="quantity-selector">
-            <button onClick={() => handleQuantityChange('decrement')}>-</button>
-            <span>{quantity}</span>
-            <button onClick={() => handleQuantityChange('increment')}>+</button>
-          </div>
-
-          <button className="add-to-cart-button" onClick={handleAddToCart}>
-            ADD TO CART
-          </button>
+        <div className="filter-section">
+          <h4>Color</h4>
+          <select
+            onChange={(e) => setFilters((prev) => ({ ...prev, color: e.target.value }))}
+          >
+            <option value="">All</option>
+            <option value="Black">Black</option>
+            <option value="White">White</option>
+          </select>
         </div>
+
+        <div className="filter-section">
+          <h4>Size</h4>
+          <select
+            onChange={(e) => setFilters((prev) => ({ ...prev, size: e.target.value }))}
+          >
+            <option value="">All</option>
+            <option value="S">S</option>
+            <option value="M">M</option>
+            <option value="L">L</option>
+          </select>
+        </div>
+
+        <div className="filter-section">
+          <h4>Availability</h4>
+          <select
+            onChange={(e) =>
+              setFilters((prev) => ({ ...prev, availability: e.target.value }))
+            }
+          >
+            <option value="">All</option>
+            <option value="available">Available</option>
+            <option value="not-available">Not Available</option>
+          </select>
+        </div>
+
+        <button className="apply-filters-button" onClick={applyFilters}>
+          Apply Filters
+        </button>
       </div>
 
-      <div className="product-description">
-        <h3>Description</h3>
-        <p>{product.description}</p>
+      <div className="product-grid">
+        {filteredProducts.map((product) => (
+          <div key={product.id} className="product-card">
+            <img src={product.imageUrl} alt={product.name} />
+            <h3>{product.name}</h3>
+            <p>${product.price.toFixed(2)}</p>
+            <div className="product-actions">
+              <button
+                className={`favorite-button ${favorites.some(
+                  (fav) => fav.id === product.id
+                ) ? 'favorited' : ''}`}
+                onClick={() => handleFavoriteToggle(product)}
+              >
+                <svg className="icon">
+                  <use
+                    xlinkHref={`/sprite.svg#${
+                      favorites.some((fav) => fav.id === product.id)
+                        ? 'heart-filled'
+                        : 'heart'
+                    }`}
+                  />
+                </svg>
+              </button>
+              <button className="add-to-cart-button" onClick={() => addToCart(product)}>
+                Add to Cart
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="pagination">
+        <button>
+          <svg className="icon">
+            <use xlinkHref="/sprite.svg#pagination-left-arrow" />
+          </svg>
+        </button>
+        <span>Page 1 of 10</span>
+        <button>
+          <svg className="icon">
+            <use xlinkHref="/sprite.svg#pagination-right-arrow" />
+          </svg>
+        </button>
       </div>
     </div>
   );
 };
 
-export default ProductPage;
+export default CatalogPage;

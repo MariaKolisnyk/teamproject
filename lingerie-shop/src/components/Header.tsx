@@ -1,29 +1,17 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import CartIcon from './CartIcon';
-import { useFavorites } from '../store/FavoritesContext';
-import './Header.scss';
+import { useFavorites } from '../store/FavoritesContext'; // Імпортуємо контекст обраного
+import { useCart } from '../store/CartContext'; // Імпортуємо контекст кошика
+import '../styles.scss'; // Підключення SCSS файлу
 
-const Header: React.FC = () => {
+const Header = () => {
   const [menuVisible, setMenuVisible] = useState(false);
-  const { favorites } = useFavorites();
+  const { favorites } = useFavorites(); // Отримання даних обраного з контексту
+  const { cart } = useCart(); // Отримання даних кошика з контексту
 
-  const toggleMenu = () => setMenuVisible((prev) => !prev);
-  const closeMenu = () => setMenuVisible(false);
-
-  const menuItems = [
-    { to: '/catalog', label: 'Catalog' },
-    { to: '/new', label: 'New Arrivals' },
-    { to: '/sale', label: 'Sale' },
-    { to: '/bras', label: 'Bras' },
-    { to: '/panties', label: 'Panties' },
-    { to: '/swimwear', label: 'Swimwear' },
-    { to: '/sleepwear', label: 'Sleepwear' },
-    { to: '/home-linen', label: 'Home Linen' },
-    { to: '/individual-tailoring', label: 'Individual Tailoring' },
-    { to: '/sign-in', label: 'Sign In' },
-    { to: '/sign-up', label: 'Sign Up' },
-  ];
+  const toggleMenu = () => {
+    setMenuVisible(!menuVisible);
+  };
 
   return (
     <header className="header">
@@ -31,52 +19,35 @@ const Header: React.FC = () => {
       <div className="header-top">
         <div className="container">
           <div className="header-left">
-            <Link to="/" aria-label="Home">
-              <img
-                src={`${process.env.PUBLIC_URL}/assets/images/LOGO.png`}
-                alt="Lingerie Logo"
-                className="header-logo"
-              />
+            <Link to="/">
+              <img src="/images/LOGO.png" alt="Lingerie Logo" className="header-logo" />
             </Link>
-            <button
-              className="menu-button"
-              onClick={toggleMenu}
-              aria-label={menuVisible ? 'Close Menu' : 'Open Menu'}
-            >
-              <img
-                src={`${process.env.PUBLIC_URL}/assets/images/components-icon.png`}
-                alt="Menu Icon"
-                className="menu-icon"
-              />
+            <button className="menu-button" onClick={toggleMenu}>
+              <img src="/images/components-icon.png" alt="Menu Icon" className="menu-icon" />
               <span>Menu</span>
             </button>
           </div>
           <div className="header-right">
-            <Link to="/search" aria-label="Search">
-              <img
-                src={`${process.env.PUBLIC_URL}/assets/images/search-icon.png`}
-                alt="Search"
-              />
+            <Link to="/search">
+              <img src="/images/search-icon.png" alt="Search" />
             </Link>
-            <Link to="/profile" aria-label="Profile">
-              <img
-                src={`${process.env.PUBLIC_URL}/assets/images/user-icon.png`}
-                alt="Profile"
-              />
+            <Link to="/profile">
+              <img src="/images/user-icon.png" alt="Profile" />
             </Link>
-            {/* Значок улюблених */}
-            <div className="favorites-icon">
-              <Link to="/favorites" aria-label="Favorites">
-                <img
-                  src={`${process.env.PUBLIC_URL}/assets/images/favorite-icon.png`}
-                  alt="Favorites"
-                />
-                {favorites.length > 0 && (
-                  <span className="badge">{favorites.length}</span>
-                )}
-              </Link>
-            </div>
-            <CartIcon />
+            {/* Іконка Favorites з кількістю */}
+            <Link to="/favorites" className="favorite-icon">
+              <img src="/images/favorite-icon.png" alt="Favorites" />
+              {favorites.length > 0 && (
+                <span className="badge">{favorites.length}</span>
+              )}
+            </Link>
+            {/* Іконка корзини з кількістю */}
+            <Link to="/cart" className="cart-icon">
+              <img src="/images/cart-icon.png" alt="Cart" />
+              {cart.length > 0 && (
+                <span className="badge">{cart.length}</span>
+              )}
+            </Link>
           </div>
         </div>
       </div>
@@ -85,34 +56,36 @@ const Header: React.FC = () => {
       <div className="header-categories">
         <div className="container">
           <nav>
-            {menuItems.slice(1, 9).map((item, index) => (
-              <Link key={index} to={item.to}>
-                {item.label.toUpperCase()}
-              </Link>
-            ))}
+            <Link to="/new">NEW</Link>
+            <Link to="/sale">SALE</Link>
+            <Link to="/bras">BRAS</Link>
+            <Link to="/panties">PANTIES</Link>
+            <Link to="/sets">SETS</Link>
+            <Link to="/swimwear">SWIMWEAR</Link>
+            <Link to="/sleepwear">SLEEPWEAR</Link>
+            <Link to="/home-linen">HOME LINEN</Link>
+            <Link to="/individual-tailoring">INDIVIDUAL TAILORING</Link>
           </nav>
         </div>
       </div>
 
       {/* Випадаюче меню */}
       {menuVisible && (
-        <div className="menu-container" role="dialog" aria-modal="true">
+        <div className="menu-container">
           <div className="menu-content">
-            <button
-              className="close-button"
-              onClick={closeMenu}
-              aria-label="Close Menu"
-            >
-              ✕
-            </button>
+            <button className="close-button" onClick={toggleMenu}>✕</button>
             <ul>
-              {menuItems.map((item, index) => (
-                <li key={index}>
-                  <Link to={item.to} onClick={closeMenu}>
-                    {item.label}
-                  </Link>
-                </li>
-              ))}
+              <li><Link to="/catalog">Catalog</Link></li>
+              <li><Link to="/new">New Arrivals</Link></li>
+              <li><Link to="/sale">Sale</Link></li>
+              <li><Link to="/bras">Bras</Link></li>
+              <li><Link to="/panties">Panties</Link></li>
+              <li><Link to="/swimwear">Swimwear</Link></li>
+              <li><Link to="/sleepwear">Sleepwear</Link></li>
+              <li><Link to="/home-linen">Home Linen</Link></li>
+              <li><Link to="/individual-tailoring">Individual Tailoring</Link></li>
+              <li><Link to="/sign-in">Sign In</Link></li>
+              <li><Link to="/sign-up">Sign Up</Link></li>
             </ul>
           </div>
         </div>
@@ -121,4 +94,4 @@ const Header: React.FC = () => {
   );
 };
 
-export default React.memo(Header);
+export default Header;

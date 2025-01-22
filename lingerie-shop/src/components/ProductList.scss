@@ -11,6 +11,12 @@
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
     overflow: hidden;
     text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+
+    &:hover {
+      transform: scale(1.05);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
 
     .product-image {
       width: 100%;
@@ -48,6 +54,7 @@
       margin-bottom: 10px;
       cursor: pointer;
       font-weight: bold;
+      transition: background-color 0.3s;
 
       &:hover {
         background-color: #ff0000;
@@ -55,10 +62,12 @@
     }
   }
 
-  .error-message {
-    color: red;
+  .error-message,
+  .no-products {
+    color: #ff0000;
     text-align: center;
     font-size: 18px;
+    grid-column: 1 / -1;
   }
 
   .loading {

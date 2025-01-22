@@ -15,14 +15,14 @@ interface Product {
   colorOptions: string[];
   sizes: string[];
   rating: number;
-  reviews: Review[];
 }
 
-interface Review {
+interface Product {
+  id: number;
   name: string;
-  rating: number;
-  comment: string;
-  date: string;
+  imageUrl: string; // або image, залежно від API
+  price: number;
+  quantity?: number; // Додайте, якщо необов'язкове поле
 }
 
 const ProductPage: React.FC = () => {

@@ -69,7 +69,14 @@ const Footer: React.FC = () => {
               aria-label="Enter your email for subscription"
               required
             />
-            <button type="submit" className="subscribe-button">SUBSCRIBE</button>
+            <button type="submit" className="subscribe-button">
+              SUBSCRIBE
+              <img
+                src={`${process.env.PUBLIC_URL}/images/subscribe-icon.svg`}
+                alt="Subscribe"
+                className="subscribe-icon"
+              />
+            </button>
           </form>
         </div>
       </div>

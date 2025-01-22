@@ -6,9 +6,10 @@ import './ProductList.scss';
 interface Product {
   id: number;
   name: string;
-  description: string;
-  price: number;
   imageUrl: string;
+  price: number;
+  description?: string; // Якщо опис є необов'язковим
+  quantity?: number;
 }
 
 const ProductList: React.FC = () => {
@@ -46,6 +47,10 @@ const ProductList: React.FC = () => {
     return <div className="error-message">{error}</div>;
   }
 
+  if (!products.length) {
+    return <div className="no-products">No products available.</div>;
+  }
+
   return (
     <div className="product-list">
       {products.map((product) => (
@@ -53,12 +58,12 @@ const ProductList: React.FC = () => {
           <img src={product.imageUrl} alt={product.name} className="product-image" />
           <div className="product-info">
             <h3 className="product-name">{product.name}</h3>
-            <p className="product-description">{product.description}</p>
+            {product.description && <p className="product-description">{product.description}</p>}
             <p className="product-price">${product.price.toFixed(2)}</p>
           </div>
           <button
             className="add-to-cart-button"
-            onClick={() => addToCart(product)}
+            onClick={() => addToCart({ ...product, quantity: 1 })} // Передаємо продукт із кількістю
           >
             Add to Cart
           </button>

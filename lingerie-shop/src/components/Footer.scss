@@ -93,10 +93,19 @@
         cursor: pointer;
         margin-top: 10px;
         font-weight: bold;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
         transition: background-color 0.3s;
 
         &:hover {
           background-color: #ff0000;
+        }
+
+        .subscribe-icon {
+          width: 16px;
+          height: 16px;
         }
       }
     }
