@@ -1,188 +1,192 @@
 .homepage {
-  font-family: 'Raleway', sans-serif;
+  font-family: 'Raleway', sans-serif; // Основний шрифт для сторінки
 }
-/* General Section Styling */
+
+/* Загальний стиль для секцій сторінки */
 section {
-  padding: 40px 20px;
+  padding: 40px 20px; // Відступи для секцій
 
   .section-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 20px;
+    font-size: 24px; // Розмір заголовка
+    font-weight: 600; // Напівжирний шрифт
+    margin-bottom: 20px; // Відступ знизу
   }
 
   .product-grid {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
+    display: flex; // Вирівнювання елементів у ряд
+    gap: 20px; // Проміжок між елементами
+    flex-wrap: wrap; // Перенос на наступний ряд
 
     .product-card {
       position: relative;
-      width: calc(33.33% - 20px); /* Три елементи в ряд */
+      width: calc(33.33% - 20px); // Три елементи в ряд
 
       .product-image {
-        width: 100%;
-        height: auto;
+        width: 100%; // Ширина зображення відповідає картці
+        height: auto; // Автоматичне співвідношення сторін
       }
 
       .product-info {
-        text-align: center;
+        text-align: center; // Текст вирівняний по центру
 
         p {
-          margin: 5px 0;
-          font-size: 14px;
+          margin: 5px 0; // Відступи між абзацами
+          font-size: 14px; // Розмір шрифту
         }
       }
     }
   }
 }
 
-/* Banner Section */
+/* Стиль секції банера */
 .banner-section {
-  background: url('/images/banner-background.png') center / cover no-repeat;
-  height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  position: relative;
+  background: url('/images/banner-background.png') center / cover no-repeat; // Фон
+  height: 100vh; // Повна висота екрана
+  display: flex; // Використовуємо flexbox
+  justify-content: center; // Центрування по горизонталі
+  align-items: center; // Центрування по вертикалі
+  position: relative; // Для абсолютного позиціонування допоміжних елементів
 
   .banner-content {
-    color: #E7E7E7;
-    text-align: left;
+    color: #E7E7E7; // Білий текст
+    text-align: left; // Текст вирівняний ліворуч
+    transform: translateX(-200px); // Зсув тексту та кнопки на 70px вліво
 
     .banner-title {
-      font-size: 57.6px;
-      font-weight: 600;
-      line-height: 1.2;
+      color: #E7E7E7; 
+      font-size: 57.6px; // Розмір тексту заголовка
+      font-weight: 600; // Напівжирний текст
+      line-height: 1.2; // Лінійний інтервал
 
       .highlight {
-        color: #AC643E;
+        color: #AC643E; // Виділений колір тексту
       }
     }
 
     .banner-description {
-      color: #868F9B;
-      font-size: 16px;
-      max-width: 480px;
-      margin-top: 10px;
+      color: #868F9B; // Сірий колір тексту
+      font-size: 16px; // Розмір шрифту
+      max-width: 480px; // Максимальна ширина тексту
+      margin-top: 10px; // Відступ зверху
     }
 
     .shop-now-button {
-      background: #EFF0F2;
-      padding: 12px 24px;
-      display: flex;
-      align-items: center;
-      color: #1F1F21;
-      border: none;
-      cursor: pointer;
-      margin-top: 20px;
-      font-weight: 600;
+      background: #EFF0F2; // Світлий фон кнопки
+      padding: 12px 24px; // Внутрішній відступ
+      display: flex; // Flex для вирівнювання
+      align-items: center; // Центрування елементів усередині кнопки
+      color: #1F1F21; // Темний текст
+      border: none; // Без рамки
+      cursor: pointer; // Курсор при наведенні
+      margin-top: 20px; // Відступ зверху
+      font-weight: 600; // Напівжирний текст
 
       svg {
-        margin-left: 8px;
-        fill: #1F1F21;
+        margin-left: 8px; // Відступ іконки
+        fill: #1F1F21; // Колір SVG
       }
     }
   }
 
   .help-desk-button {
-    position: absolute;
-    top: 50%;
-    right: -35px;
-    transform: translateY(-50%) rotate(90deg);
-    background: #868F9B;
-    color: #1F1F21;
-    font-weight: 600;
-    padding: 5px 10px;
-    cursor: pointer;
+    position: absolute; // Абсолютне позиціонування
+    top: 50%; // Центрування по вертикалі
+    right: -35px; // Відступ справа
+    transform: translateY(-50%) rotate(90deg); // Поворот і вирівнювання
+    background: #868F9B; // Сірий фон
+    color: #1F1F21; // Темний текст
+    font-weight: 600; // Напівжирний текст
+    padding: 5px 10px; // Внутрішній відступ
+    cursor: pointer; // Курсор при наведенні
   }
 }
-/* Sale Section Specific Styling */
+
+/* Секція "Sale" */
 .sale-section {
-  background-color: #f7f8fa;
+  background-color: #f7f8fa; // Світлий фон секції
 
   .product-card {
-    border: 1px solid #ddd;
-    padding: 10px;
-    transition: transform 0.3s ease;
+    border: 1px solid #ddd; // Сіра рамка
+    padding: 10px; // Внутрішні відступи
+    transition: transform 0.3s ease; // Анімація при наведенні
 
     &:hover {
-      transform: scale(1.05);
+      transform: scale(1.05); // Збільшення розміру при наведенні
     }
 
     .product-image {
-      width: 100%;
-      height: auto;
-      object-fit: cover;
+      width: 100%; // Розтягування зображення на всю ширину
+      height: auto; // Збереження пропорцій
+      object-fit: cover; // Обрізка зображення
     }
 
     .product-info {
-      margin-top: 10px;
-      text-align: center;
+      margin-top: 10px; // Відступ зверху
+      text-align: center; // Вирівнювання по центру
 
       p {
-        margin: 0;
-        font-size: 14px;
+        margin: 0; // Без додаткових відступів
+        font-size: 14px; // Розмір тексту
       }
     }
   }
 }
 
-/* Collection, Best-Sellers, Sale, Tailoring sections */
+/* Секції нової колекції, бестселерів, розпродажу, пошиву */
 .collection-section,
 .best-sellers-section,
 .sale-section,
 .tailoring-section {
-  padding: 40px 20px;
+  padding: 40px 20px; // Відступи для секцій
 
   .section-title {
-    font-size: 24px;
-    font-weight: 600;
-    margin-bottom: 10px;
+    font-size: 24px; // Розмір заголовка
+    font-weight: 600; // Напівжирний
+    margin-bottom: 10px; // Відступ знизу
   }
+    .section-subtitle {
+      font-size: 16px;
+      color: #868F9B;
+      margin-bottom: 20px;
+    }
 
-  .section-subtitle {
-    font-size: 16px;
-    color: #868F9B;
-    margin-bottom: 20px;
-  }
 
   .product-grid {
     display: flex;
-    gap: 16px;
-    flex-wrap: wrap;
+    gap: 16px; // Відстань між продуктами
+    flex-wrap: wrap; // Перенос на новий ряд
 
     .product-card {
-      position: relative;
-      width: 240px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-      transition: transform 0.3s, box-shadow 0.3s;
+      position: relative; // Відносне позиціонування
+      width: 240px; // Фіксована ширина картки
+      border: 1px solid #ddd; // Сіра рамка
+      border-radius: 8px; // Закруглені кути
+      overflow: hidden; // Обрізка контенту
+      transition: transform 0.3s, box-shadow 0.3s; // Анімація при наведенні
 
       &:hover {
-        transform: scale(1.03);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transform: scale(1.03); // Легка зміна розміру
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); // Тінь
       }
 
       .product-image {
-        width: 100%;
-        height: auto;
+        width: 100%; // Повна ширина
+        height: auto; // Пропорції
       }
 
       .product-button {
-        background: #000;
-        color: #fff;
-        padding: 10px;
-        position: absolute;
+        background: #000; // Чорний фон
+        color: #fff; // Білий текст
+        padding: 10px; // Відступи
+        position: absolute; // Розташування внизу
         bottom: 0;
         width: 100%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 14px;
-        text-transform: uppercase;
-        cursor: pointer;
+        font-size: 14px; // Розмір тексту
+        text-transform: uppercase; // Великі літери
+        cursor: pointer; // Курсор при наведенні
       }
     }
   }

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
+import HelpDesk from './HelpDesk'; // Компонент HelpDesk
 import { getNewCollection, getBestSellers, getTailoringProducts } from '../services/ProductService';
 
 import './Homepage.scss';
@@ -38,6 +39,7 @@ interface Product {
 }
 
 const Homepage: React.FC = () => {
+  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false); // Стан для відкриття меню HelpDesk
   const [newCollectionProducts, setNewCollectionProducts] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [saleProducts, setSaleProducts] = useState<Product[]>([]);
@@ -79,27 +81,40 @@ const Homepage: React.FC = () => {
     });
   };
 
+// Функція перемикання стану HelpDesk
+const toggleHelpDesk = () => {
+  setHelpDeskOpen((prevState) => !prevState);
+};
 
   return (
     <div className="homepage">
-      {/* Banner Section */}
+      {/* Секція банера */}
       <section className="banner-section">
         <div className="banner-content">
           <h1 className="banner-title">
             BREAK PATTERNS <span className="highlight">WITH US</span>
           </h1>
           <p className="banner-description">
-            In our store, you can buy ready-made designer underwear or bring to life any
-            of your sketches. You can also choose a gift for your loved one.
+            In our store, you can buy ready-made designer underwear or bring to life any of your sketches.
           </p>
           <Link to="/catalog" className="shop-now-button">
             <ArrowIcon color="#1F1F21" /> SHOP NOW
           </Link>
         </div>
-        <div className="help-desk-button">HELP DESK</div>
+
+        {/* Кнопка Help Desk */}
+        <button className="help-desk-button" onClick={toggleHelpDesk}>
+          HELP DESK
+        </button>
       </section>
 
-      {/* New Collection Section */}
+      {/* Відображення HelpDesk */}
+      {isHelpDeskOpen && <HelpDesk onClose={toggleHelpDesk} />}
+    
+       
+        
+  
+       {/* New Collection Section */}
       <section className="collection-section">
         <h2 className="section-title">New Collection</h2>
         <div className="product-grid">

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import './Footer.scss';
 
 const Footer: React.FC = () => {
+  // Основна структура футера, поділена на секції для легшого читання та редагування.
   return (
     <footer className="footer">
       <div className="footer-content">
@@ -12,6 +13,7 @@ const Footer: React.FC = () => {
           <p className="hotline">Free hotline:</p>
           <p className="phone-number">8 888 888-88-88</p>
           <div className="social-icons" aria-label="Social media links">
+            {/* Іконки соцмереж з посиланнями */}
             <a href="https://www.youtube.com" target="_blank" rel="noopener noreferrer" aria-label="YouTube">
               <img src={`${process.env.PUBLIC_URL}/images/youtube.png`} alt="YouTube" />
             </a>
@@ -61,7 +63,13 @@ const Footer: React.FC = () => {
         <div className="footer-section subscribe-section">
           <h4>SUBSCRIBE TO NEWS</h4>
           <p>Subscribe to receive news about trends, collections and new promotions.</p>
-          <form onSubmit={(e) => e.preventDefault()} aria-label="Subscription Form">
+          <form
+            onSubmit={(e) => {
+              e.preventDefault(); // Блокування перезавантаження сторінки
+              alert('Thank you for subscribing!'); // Повідомлення про підписку
+            }}
+            aria-label="Subscription Form"
+          >
             <input
               type="email"
               className="email-input"
@@ -81,6 +89,7 @@ const Footer: React.FC = () => {
         </div>
       </div>
 
+      {/* Нижня частина футера */}
       <div className="footer-bottom">
         <p>© 2024 Lingerie. All rights reserved.</p>
       </div>
