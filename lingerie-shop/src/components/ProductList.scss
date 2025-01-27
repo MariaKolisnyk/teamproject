@@ -1,6 +1,6 @@
 .product-list {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); // Адаптивна сітка
   gap: 20px;
   padding: 20px;
 
@@ -14,7 +14,7 @@
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 
     &:hover {
-      transform: scale(1.05);
+      transform: scale(1.05); // Легке збільшення при наведенні
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     }
 
@@ -57,7 +57,7 @@
       transition: background-color 0.3s;
 
       &:hover {
-        background-color: #ff0000;
+        background-color: #ff0000; // Зміна кольору при наведенні
       }
     }
   }
@@ -67,7 +67,7 @@
     color: #ff0000;
     text-align: center;
     font-size: 18px;
-    grid-column: 1 / -1;
+    grid-column: 1 / -1; // Центрування повідомлення
   }
 
   .loading {

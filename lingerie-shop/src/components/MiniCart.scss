@@ -1,13 +1,12 @@
 .mini-cart-overlay {
   position: fixed;
   top: 0;
+  left: 0;
   right: 0;
   bottom: 0;
-  left: 0;
-  background-color: rgba(0, 0, 0, 0.5);
+  background-color: rgba(0, 0, 0, 0.5); // Напівпрозорий фон
   display: flex;
   justify-content: flex-end;
-  align-items: center;
   z-index: 1000;
 }
 
@@ -16,107 +15,108 @@
   width: 350px;
   height: 100vh;
   padding: 20px;
-  box-shadow: -2px 0px 5px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
+  box-shadow: -2px 0 5px rgba(0, 0, 0, 0.1);
   position: relative;
-}
 
-.close-button {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: none;
-  border: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-.empty-message {
-  text-align: center;
-  color: #888;
-  margin-top: 20px;
-}
-
-.cart-items {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  flex-grow: 1;
-  overflow-y: auto;
-
-  .cart-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #ddd;
-    padding-bottom: 10px;
-
-    img {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      margin-right: 10px;
-      border-radius: 4px;
-    }
-
-    .item-info {
-      flex-grow: 1;
-
-      .item-name {
-        font-weight: bold;
-        margin-bottom: 5px;
-      }
-
-      .item-quantity,
-      .item-price {
-        font-size: 14px;
-        color: #555;
-      }
-    }
-
-    .remove-button {
-      background-color: #ff4d4f;
-      color: #fff;
-      border: none;
-      padding: 5px 10px;
-      font-size: 14px;
-      cursor: pointer;
-      border-radius: 4px;
-      transition: background-color 0.3s;
-
-      &:hover {
-        background-color: #e63946;
-      }
-    }
-  }
-}
-
-.mini-cart-summary {
-  margin-top: 20px;
-  text-align: center;
-
-  .total-amount {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 15px;
-  }
-
-  .checkout-button {
-    background-color: #000;
-    color: #fff;
-    padding: 10px 20px;
+  .close-button {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: none;
     border: none;
+    font-size: 24px;
     cursor: pointer;
-    width: 100%;
-    text-align: center;
-    font-weight: bold;
-    border-radius: 4px;
-    text-decoration: none;
-    transition: background-color 0.3s;
+    color: #1f1f21; // Темний колір для кнопки
+    transition: color 0.3s;
 
     &:hover {
-      background-color: #444;
+      color: #ac643e; // Підсвічування кнопки при наведенні
+    }
+  }
+
+  .mini-cart-title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+
+  .cart-items {
+    flex-grow: 1;
+    overflow-y: auto;
+
+    .cart-item {
+      display: flex;
+      margin-bottom: 15px;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 10px;
+
+      img {
+        width: 50px;
+        height: 50px;
+        border-radius: 4px;
+        margin-right: 10px;
+      }
+
+      .item-info {
+        flex-grow: 1;
+
+        .item-name {
+          font-weight: bold;
+        }
+
+        .item-quantity,
+        .item-price {
+          font-size: 14px;
+          color: #555;
+        }
+      }
+
+      .remove-button {
+        background: #e63946;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        padding: 5px 10px;
+        cursor: pointer;
+
+        &:hover {
+          background: #d62828;
+        }
+      }
+    }
+  }
+
+  .mini-cart-summary {
+    .total-amount {
+      font-size: 18px;
+      font-weight: bold;
+      margin-bottom: 20px;
+
+      span {
+        color: #ac643e; // Колір для суми
+      }
+    }
+
+    .action-buttons {
+      display: flex;
+      gap: 10px;
+
+      .view-cart-button,
+      .checkout-button {
+        background: black;
+        color: white;
+        text-decoration: none;
+        text-align: center;
+        padding: 10px;
+        flex: 1;
+        border-radius: 4px;
+
+        &:hover {
+          background: #444;
+        }
+      }
     }
   }
 }

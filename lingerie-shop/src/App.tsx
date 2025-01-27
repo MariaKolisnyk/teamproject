@@ -5,7 +5,7 @@ import Homepage from './pages/Homepage';
 import CatalogPage from './pages/CatalogPage';
 import Search from './pages/Search';
 import Profile from './pages/Profile';
-import Cart from './pages/Cart';
+
 import Favorites from './pages/Favorites';
 import CheckoutPage from './pages/CheckoutPage';
 import SignIn from './pages/SignIn';
@@ -14,6 +14,12 @@ import NotFound from './pages/NotFound';
 import MiniCart from './components/MiniCart'; // Додаємо MiniCart
 import { FavoritesProvider } from './store/FavoritesContext';
 import { CartProvider } from './store/CartContext';
+import CartPage from './pages/CartPage';
+
+
+
+// Додаємо маршрут
+<Route path="/cart" element={<CartPage />} />
 
 const App: React.FC = () => {
   const [isMiniCartOpen, setMiniCartOpen] = useState(false); // Стан для відкриття MiniCart
@@ -84,7 +90,7 @@ const App: React.FC = () => {
               path="/cart"
               element={
                 <Layout>
-                  <Cart />
+                  <CartPage />
                 </Layout>
               }
             />

@@ -1,53 +1,53 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import './CatalogPage.scss'; // Стилі для каталогу
-import { useFavorites } from '../store/FavoritesContext'; // Контекст для обраних товарів
-import { useCart } from '../store/CartContext'; // Контекст для корзини
-import axiosInstance from '../utils/axiosInstance'; // Імпорт HTTP-клієнта для роботи з API
+import { Link } from 'react-router-dom'; // Для навігації між сторінками
+import './CatalogPage.scss'; // Імпорт стилів
+import { useFavorites } from '../store/FavoritesContext'; // Контекст обраних товарів
+import { useCart } from '../store/CartContext'; // Контекст для роботи з кошиком
+import axiosInstance from '../utils/axiosInstance'; // HTTP-клієнт для запитів до API
 
-// Інтерфейс для опису продукту
+// Тип для опису товару
 interface Product {
-  id: number;
-  name: string;
-  imageUrl: string;
-  price: number;
-  isAvailable: boolean;
-  brand: string;
-  size: string;
-  color: string;
+  id: number; // Унікальний ідентифікатор продукту
+  name: string; // Назва продукту
+  imageUrl: string; // Посилання на зображення продукту
+  price: number; // Ціна продукту
+  isAvailable: boolean; // Чи доступний продукт
+  brand: string; // Бренд продукту
+  size: string; // Розмір продукту
+  color: string; // Колір продукту
 }
 
 const CatalogPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]); // Масив усіх продуктів
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // Масив відфільтрованих продуктів
+  const [products, setProducts] = useState<Product[]>([]); // Список усіх продуктів
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // Відфільтровані продукти
   const [filters, setFilters] = useState({
-    brand: '',
-    color: '',
-    size: '',
-    availability: '',
-    minPrice: 0,
-    maxPrice: 1000,
-  }); // Стан для зберігання активних фільтрів
+    brand: '', // Фільтр за брендом
+    color: '', // Фільтр за кольором
+    size: '', // Фільтр за розміром
+    availability: '', // Фільтр за доступністю
+    minPrice: 0, // Мінімальна ціна
+    maxPrice: 1000, // Максимальна ціна
+  });
 
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites(); // Функції для роботи з обраними товарами
-  const { addToCart } = useCart(); // Функція для додавання до корзини
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites(); // Контекст обраного
+  const { addToCart } = useCart(); // Контекст для роботи з кошиком
 
-  // Завантаження продуктів із серверу при першому рендері
+  // Завантаження продуктів із бекенду
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axiosInstance.get<Product[]>('/products'); // Отримання даних продуктів з API
-        setProducts(response.data); // Збереження отриманих продуктів
-        setFilteredProducts(response.data); // Відображення всіх продуктів за замовчуванням
+        const response = await axiosInstance.get<Product[]>('/products');
+        setProducts(response.data); // Збереження усіх продуктів
+        setFilteredProducts(response.data); // Початковий стан — всі продукти
       } catch (error) {
         console.error('Failed to fetch products:', error); // Логування помилок
       }
     };
 
-    fetchProducts();
+    fetchProducts(); // Виклик функції
   }, []);
 
-  // Застосування фільтрів
+  // Фільтрація продуктів
   const applyFilters = () => {
     let filtered = [...products];
 
@@ -69,9 +69,7 @@ const CatalogPage: React.FC = () => {
     // Фільтр за доступністю
     if (filters.availability === 'available') {
       filtered = filtered.filter((product) => product.isAvailable);
-    }
-
-    if (filters.availability === 'not-available') {
+    } else if (filters.availability === 'not-available') {
       filtered = filtered.filter((product) => !product.isAvailable);
     }
 
@@ -81,12 +79,12 @@ const CatalogPage: React.FC = () => {
         product.price >= filters.minPrice && product.price <= filters.maxPrice
     );
 
-    setFilteredProducts(filtered); // Оновлення списку відфільтрованих продуктів
+    setFilteredProducts(filtered); // Оновлення стану відфільтрованих продуктів
   };
 
-  // Обробка зміни значень фільтра ціни
+  // Оновлення значення фільтра ціни
   const handlePriceChange = (field: 'minPrice' | 'maxPrice', value: number) => {
-    setFilters((prev) => ({ ...prev, [field]: value })); // Оновлення стану фільтрів
+    setFilters((prev) => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -94,7 +92,6 @@ const CatalogPage: React.FC = () => {
       {/* Фільтри */}
       <div className="filters">
         <h3>Filters</h3>
-
         {/* Фільтр за брендом */}
         <div className="filter-section">
           <h4>Brand</h4>
@@ -106,7 +103,6 @@ const CatalogPage: React.FC = () => {
             <option value="Brand B">Brand B</option>
           </select>
         </div>
-
         {/* Фільтр за кольором */}
         <div className="filter-section">
           <h4>Color</h4>
@@ -118,7 +114,6 @@ const CatalogPage: React.FC = () => {
             <option value="White">White</option>
           </select>
         </div>
-
         {/* Фільтр за розміром */}
         <div className="filter-section">
           <h4>Size</h4>
@@ -131,7 +126,6 @@ const CatalogPage: React.FC = () => {
             <option value="L">L</option>
           </select>
         </div>
-
         {/* Фільтр за доступністю */}
         <div className="filter-section">
           <h4>Availability</h4>
@@ -145,40 +139,29 @@ const CatalogPage: React.FC = () => {
             <option value="not-available">Not Available</option>
           </select>
         </div>
-
         {/* Фільтр за ціною */}
         <div className="filter-section">
           <h4>Price</h4>
           <div className="price-filter">
-            <div className="price-inputs">
-              <div>
-                <label htmlFor="min-price">From</label>
-                <input
-                  id="min-price"
-                  type="number"
-                  value={filters.minPrice}
-                  onChange={(e) => handlePriceChange('minPrice', +e.target.value)}
-                />
-              </div>
-              <div>
-                <label htmlFor="max-price">To</label>
-                <input
-                  id="max-price"
-                  type="number"
-                  value={filters.maxPrice}
-                  onChange={(e) => handlePriceChange('maxPrice', +e.target.value)}
-                />
-              </div>
-            </div>
+            <input
+              type="number"
+              placeholder="Min"
+              value={filters.minPrice}
+              onChange={(e) => handlePriceChange('minPrice', +e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Max"
+              value={filters.maxPrice}
+              onChange={(e) => handlePriceChange('maxPrice', +e.target.value)}
+            />
           </div>
         </div>
-
         {/* Кнопка застосування фільтрів */}
         <button className="apply-filters-button" onClick={applyFilters}>
           Apply Filters
         </button>
       </div>
-
       {/* Сітка продуктів */}
       <div className="product-grid">
         {filteredProducts.map((product) => (
@@ -188,24 +171,16 @@ const CatalogPage: React.FC = () => {
             <p>${product.price.toFixed(2)}</p>
             <div className="product-actions">
               <button
-                className={`favorite-button ${favorites.some(
-                  (fav) => fav.id === product.id
-                ) ? 'favorited' : ''}`}
+                className={`favorite-button ${
+                  favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''
+                }`}
                 onClick={() =>
                   favorites.some((fav) => fav.id === product.id)
                     ? removeFromFavorites(product.id)
                     : addToFavorites(product)
                 }
               >
-                <svg className="icon">
-                  <use
-                    xlinkHref={`/sprite.svg#${
-                      favorites.some((fav) => fav.id === product.id)
-                        ? 'heart-filled'
-                        : 'heart'
-                    }`}
-                  />
-                </svg>
+                ❤
               </button>
               <button
                 className="add-to-cart-button"
