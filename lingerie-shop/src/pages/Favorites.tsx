@@ -1,22 +1,32 @@
 import React from 'react';
-import { useFavorites } from '../store/FavoritesContext';
+import { Link } from 'react-router-dom'; // Додаємо можливість переходу на сторінку товару
+import { useFavorites } from '../store/FavoritesContext'; // Контекст для роботи з обраними товарами
 import './Favorites.scss';
 
 const Favorites: React.FC = () => {
-  const { favorites, removeFromFavorites } = useFavorites();
+  const { favorites, removeFromFavorites } = useFavorites(); // Деструктуризація контексту
 
   return (
     <div className="favorites-page">
       <h2>Your Favorites</h2>
+
       {favorites.length > 0 ? (
         <div className="favorites-grid">
           {favorites.map((product) => (
             <div key={product.id} className="favorite-card">
-              <img src={product.image} alt={product.name} className="favorite-image" />
+              {/* Додаємо посилання на сторінку товару */}
+              <Link to={`/product/${product.id}`}>
+                <img src={product.image} alt={product.name} className="favorite-image" />
+              </Link>
+
               <div className="favorite-info">
-                <p className="favorite-name">{product.name}</p>
+                <Link to={`/product/${product.id}`} className="favorite-name">
+                  {product.name}
+                </Link>
                 <p className="favorite-price">${product.price.toFixed(2)}</p>
               </div>
+
+              {/* Кнопка видалення з обраного */}
               <button
                 className="remove-button"
                 onClick={() => removeFromFavorites(product.id)}

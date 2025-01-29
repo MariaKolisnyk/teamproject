@@ -1,45 +1,48 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import HelpDesk from '../pages/HelpDesk'; // Компонент HelpDesk для підтримки користувачів
+import HelpDesk from '../pages/HelpDesk'; // Випадаюче меню довідкової служби
 import { useCart } from '../store/CartContext'; // Контекст для роботи з кошиком
-import './CartPage.scss'; // Імпорт стилів
+import axiosInstance from '../utils/axiosInstance'; // Інстанс для запитів на бекенд
+import './CartPage.scss'; // Стилі для сторінки кошика
 
 const CartPage: React.FC = () => {
-  const { cart, removeFromCart, addToCart } = useCart(); // Доступ до товарів у кошику та функцій керування
-  const [promoCode, setPromoCode] = useState(''); // Стан для введеного промокоду
-  const [discount, setDiscount] = useState(0); // Стан для розміру знижки
-  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false); // Стан для відображення Help Desk
+  const { cart, removeFromCart, addToCart, fetchCart } = useCart(); // Отримання функцій та стану кошика
+  const [promoCode, setPromoCode] = useState(''); // Поле для промокоду
+  const [discount, setDiscount] = useState(0); // Значення знижки
+  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false); // Видимість вікна Help Desk
 
-  // Функція для обробки застосування промокоду
-  const handleApplyPromoCode = () => {
-    if (promoCode === 'DISCOUNT10') {
-      setDiscount(10); // Установлюємо знижку 10%
-    } else {
-      alert('Invalid promo code'); // Повідомлення про неправильний промокод
+  // Завантаження кошика при рендері сторінки
+  useEffect(() => {
+    fetchCart();
+  }, []);
+
+  // Функція для застосування промокоду
+  const handleApplyPromoCode = async () => {
+    try {
+      const response = await axiosInstance.post('/api/v1/cart/apply-promo', { promoCode });
+      setDiscount(response.data.discount); // Отримання знижки від бекенду
+    } catch (error) {
+      console.error('Invalid promo code:', error);
+      alert('Invalid promo code');
       setDiscount(0);
     }
   };
 
-  // Розрахунок загальної ціни товарів у кошику
-  const totalProductsPrice = cart.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-
-  // Розрахунок загальної ціни після знижки
+  // Обчислення загальної вартості товарів у кошику
+  const totalProductsPrice = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
   const discountedPrice = totalProductsPrice - (totalProductsPrice * discount) / 100;
 
-  // Функція для відкриття/закриття Help Desk
+  // Функція перемикання Help Desk
   const toggleHelpDesk = () => {
     setHelpDeskOpen((prev) => !prev);
   };
 
   return (
     <div className="cart-page">
-      <h1 className="cart-title">CART</h1> {/* Заголовок сторінки */}
+      <h1 className="cart-title">CART</h1>
 
       <div className="cart-content">
-        {/* Секція таблиці товарів у кошику */}
+        {/* Секція товарів у кошику */}
         <div className="cart-items">
           <table>
             <thead>
@@ -57,7 +60,6 @@ const CartPage: React.FC = () => {
                 <tr key={item.id}>
                   <td>
                     <div className="product-info">
-                      {/* Додаємо посилання на сторінку продукту */}
                       <Link to={`/product/${item.id}`}>
                         <img src={item.image} alt={item.name} />
                       </Link>
@@ -88,7 +90,6 @@ const CartPage: React.FC = () => {
               ))}
             </tbody>
           </table>
-          {/* Посилання для повернення до каталогу */}
           <Link to="/catalog" className="continue-shopping">→ CONTINUE SHOPPING</Link>
         </div>
 
@@ -102,7 +103,7 @@ const CartPage: React.FC = () => {
           </div>
           <button className="checkout-button">→ CHECKOUT</button>
 
-          {/* Поле для введення промокоду */}
+          {/* Поле введення промокоду */}
           <div className="promo-code">
             <input
               type="text"
@@ -115,17 +116,14 @@ const CartPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Кнопка для відкриття Help Desk */}
+      {/* Кнопка Help Desk */}
       <button className="help-desk-button" onClick={toggleHelpDesk}>HELP DESK</button>
-
-      {/* Компонент Help Desk */}
       {isHelpDeskOpen && <HelpDesk onClose={toggleHelpDesk} />}
 
       {/* Рекомендації для покупців */}
       <div className="recommendations">
         <h2>YOU MIGHT ALSO LIKE</h2>
         <div className="recommendation-items">
-          {/* Статичні дані для демонстрації */}
           <div className="recommendation-item">
             <img src="/images/recommendation1.png" alt="Recommendation 1" />
             <p>Fleur Noir Elegance</p>

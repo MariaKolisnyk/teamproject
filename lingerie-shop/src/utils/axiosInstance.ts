@@ -1,49 +1,74 @@
 import axios from 'axios';
-import { BASE_URL } from '../config'; // Імпортуємо правильний BASE_URL
 
-// Створюємо інстанс axios з базовим URL і стандартними заголовками
+// Використання змінної середовища для динамічного визначення базового URL бекенду
+const BASE_URL = process.env.REACT_APP_BASE_URL || 'http://127.0.0.1:8080/api/v1';
+
+// Створюємо інстанс axios для всіх запитів
 const axiosInstance = axios.create({
-  baseURL: BASE_URL, // Базовий URL до бекенду
+  baseURL: BASE_URL, // Використання глобальної змінної
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json', // Формат відправлених даних
   },
 });
 
-// Перехоплювач запитів
+// 🔹 **Перехоплювач запитів:** Додає токен до заголовків, якщо він є
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Додаємо токен авторизації, якщо він існує
-    const token = localStorage.getItem('authToken');
+    const token = localStorage.getItem('authToken'); // Отримання токену з localStorage
     if (token) {
-      config.headers.Authorization = `Bearer ${token}`; // Зміна "Basic" на "Bearer", якщо бекенд працює з JWT
+      config.headers.Authorization = `Bearer ${token}`; // Додаємо токен авторизації
     }
+    console.log(`[API Request] ${config.method?.toUpperCase()} ${config.url}`); // Логування запитів
     return config;
   },
   (error) => {
-    console.error('Error in request:', error);
+    console.error('[Request Error]:', error);
     return Promise.reject(error);
   }
 );
 
-// Перехоплювач відповідей
+// 🔹 **Перехоплювач відповідей:** Обробляє відповіді API та помилки
 axiosInstance.interceptors.response.use(
-  (response) => response, // Просто повертаємо відповідь, якщо вона успішна
+  (response) => {
+    console.log(`[API Response] ${response.status}:`, response.data); // Логування відповіді API
+    return response;
+  },
   (error) => {
     if (error.response) {
-      // Обробка статусу 401 (Unauthorized)
+      console.error(`[Response Error ${error.response.status}]:`, error.response.data);
+
+      // 🔴 **Якщо статус 401 (Unauthorized), перенаправляємо на логін**
       if (error.response.status === 401) {
-        console.log('Unauthorized. Redirecting to login...');
-        localStorage.removeItem('authToken'); // Видаляємо токен
+        console.warn('❌ Unauthorized. Redirecting to login...');
+        localStorage.removeItem('authToken'); // Видалення токену
         window.location.href = '/sign-in'; // Редірект на сторінку логіну
       }
 
-      // Виводимо інші помилки
-      console.error(`Error ${error.response.status}:`, error.response.data);
+      // 🔴 **Якщо статус 500 (Internal Server Error)**
+      if (error.response.status === 500) {
+        console.error('❌ Server error. Please try again later.');
+      }
+
+      // 🔴 **Якщо статус 404 (Not Found)**
+      if (error.response.status === 404) {
+        console.error('⚠ Resource not found.');
+      }
     } else {
-      console.error('Network Error:', error.message); // Помилка мережі
+      console.error('🌐 Network Error:', error.message); // Якщо сервер недоступний
     }
+
     return Promise.reject(error);
   }
 );
+
+// 📌 **Перевірка підключення до бекенду**
+(async () => {
+  try {
+    await axiosInstance.get('/health'); // Додаємо перевірку роботи бекенду
+    console.log('✅ Backend is available');
+  } catch (error) {
+    console.error('🚨 Backend is not responding!');
+  }
+})();
 
 export default axiosInstance;

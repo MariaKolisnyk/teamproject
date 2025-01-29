@@ -1,44 +1,51 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axios from 'axios';
+import axiosInstance from '../utils/axiosInstance'; // Використання глобального axios
 import Footer from '../components/Footer';
 import './SignIn.scss';
 
 const SignIn: React.FC = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Хук для редіректу
 
-  // State для форми
+  // Стан форми
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false,
+    rememberMe: false, // Чекбокс "Запам'ятати мене"
   });
 
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false); // Контроль видимості пароля
 
-  // Обробка змін у полях форми
+  // Обробка змін у полях
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value, // Якщо чекбокс, використовуємо checked
     });
   };
 
-  // Відправка форми
+  // Обробка відправки форми
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+    e.preventDefault(); // Запобігання перезавантаженню сторінки
 
     try {
-      const response = await axios.post('http://127.0.0.1:8080/api/v1/auth/login', {
+      const response = await axiosInstance.post('/auth/login', {
         email: formData.email,
         password: formData.password,
       });
 
-      console.log('Login successful:', response.data);
-      localStorage.setItem('token', response.data.token); // Збереження токена
-      setError(null);
+      // Збереження токена
+      if (formData.rememberMe) {
+        localStorage.setItem('authToken', response.data.token);
+      } else {
+        sessionStorage.setItem('authToken', response.data.token);
+      }
+
+      setError(null); // Очистити помилку
       navigate('/'); // Перенаправлення на головну сторінку
+
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     }
@@ -59,18 +66,22 @@ const SignIn: React.FC = () => {
               onChange={handleChange}
               required
             />
+
             <label>Password</label>
             <div className="password-wrapper">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 name="password"
                 placeholder="Enter your password"
                 value={formData.password}
                 onChange={handleChange}
                 required
               />
-              <span className="show-password-icon">👁️</span>
+              <span className="show-password-icon" onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? '🙈' : '👁️'}
+              </span>
             </div>
+
             <div className="options">
               <label>
                 <input
@@ -83,21 +94,26 @@ const SignIn: React.FC = () => {
               </label>
               <Link to="/forgot-password">Forgot password?</Link>
             </div>
+
             {error && <div className="error-message">{error}</div>}
+            
             <button className="sign-in-button" type="submit">
               SIGN IN
             </button>
           </form>
+
           <div className="or-section">or continue with</div>
           <div className="social-buttons">
             <button className="google">Google</button>
             <button className="apple">Apple</button>
             <button className="facebook">Facebook</button>
           </div>
+
           <p className="sign-up-link">
             Don’t have an account? <Link to="/sign-up">Create an account</Link>
           </p>
         </div>
+
         <div className="sign-in-banner">
           <img src="/images/sign-in-banner.jpg" alt="Sign In Banner" />
           <p>

@@ -1,48 +1,35 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Layout from './Layout'; // Обгортка Layout
+import Layout from './Layout';
 import Homepage from './pages/Homepage';
 import CatalogPage from './pages/CatalogPage';
 import Search from './pages/Search';
 import Profile from './pages/Profile';
-
 import Favorites from './pages/Favorites';
 import CheckoutPage from './pages/CheckoutPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import NotFound from './pages/NotFound';
-import MiniCart from './components/MiniCart'; // Додаємо MiniCart
 import { FavoritesProvider } from './store/FavoritesContext';
 import { CartProvider } from './store/CartContext';
 import CartPage from './pages/CartPage';
-
-
-
-// Додаємо маршрут
-<Route path="/cart" element={<CartPage />} />
+import ForgotPassword from './pages/ForgotPassword';
 
 const App: React.FC = () => {
-  const [isMiniCartOpen, setMiniCartOpen] = useState(false); // Стан для відкриття MiniCart
-
-  const toggleMiniCart = () => {
-    setMiniCartOpen((prev) => !prev); // Функція для перемикання стану MiniCart
-  };
-
   if (process.env.NODE_ENV === 'development') {
-    console.log('API URL:', process.env.REACT_APP_API_URL); // Логування URL API у режимі розробки
+    console.log('API URL:', process.env.REACT_APP_API_URL);
   }
 
   return (
     <FavoritesProvider>
       <CartProvider>
         <Router>
-          {isMiniCartOpen && <MiniCart onClose={toggleMiniCart} />} {/* Перевіряємо відкриття MiniCart */}
           <Routes>
             <Route
               path="/"
               element={
                 <Layout>
-                  <Homepage /> {/* Видалено toggleMiniCart, оскільки він не використовується */}
+                  <Homepage />
                 </Layout>
               }
             />
@@ -59,6 +46,14 @@ const App: React.FC = () => {
               element={
                 <Layout>
                   <SignUp />
+                </Layout>
+              }
+            />
+            <Route
+              path="/forgot-password"
+              element={
+                <Layout>
+                  <ForgotPassword />
                 </Layout>
               }
             />

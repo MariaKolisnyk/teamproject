@@ -9,30 +9,30 @@ import axiosInstance from '../utils/axiosInstance'; // HTTP-запити
 interface Product {
   id: number;
   name: string;
-  image: string;
+  imageUrl: string; // Поле оновлене відповідно до API
   price: number;
   description: string;
   laundryCare: string[]; // Інструкції по догляду
   colorOptions: string[]; // Варіанти кольорів
   sizes: string[]; // Варіанти розмірів
-  rating: number; // Рейтинг продукту
+  rating: number;
 }
 
 const ProductPage: React.FC = () => {
-  const { productId } = useParams<{ productId: string }>(); // Отримання ID продукту з параметрів URL
+  const { productId } = useParams<{ productId: string }>(); // Отримання ID продукту з URL
   const [product, setProduct] = useState<Product | null>(null); // Стан для продукту
   const [quantity, setQuantity] = useState(1); // Кількість обраного продукту
   const [selectedColor, setSelectedColor] = useState<string | null>(null); // Обраний колір
   const [selectedSize, setSelectedSize] = useState<string | null>(null); // Обраний розмір
   const [error, setError] = useState<string | null>(null); // Повідомлення про помилки
   const [isLoading, setIsLoading] = useState(true); // Стан завантаження
-  const { addToCart } = useCart(); // Функції контексту кошика
+  const { addToCart } = useCart(); // Функція додавання до кошика
 
-  // Завантаження даних продукту
+  // Запит на отримання даних продукту
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axiosInstance.get<Product>(`/products/${productId}`);
+        const response = await axiosInstance.get<Product>(`/api/v1/products/${productId}`);
         setProduct(response.data);
         setSelectedColor(response.data.colorOptions[0]); // Перший колір за замовчуванням
         setSelectedSize(response.data.sizes[0]); // Перший розмір за замовчуванням
@@ -52,7 +52,7 @@ const ProductPage: React.FC = () => {
     setQuantity((prev) => (operation === 'increment' ? prev + 1 : Math.max(1, prev - 1)));
   };
 
-  // Додавання продукту до кошика
+  // Додавання товару в кошик
   const handleAddToCart = () => {
     if (!selectedColor || !selectedSize) {
       setError('Please select a color and size before adding to cart.');
@@ -63,7 +63,7 @@ const ProductPage: React.FC = () => {
         id: product.id,
         name: product.name,
         price: product.price,
-        image: product.image,
+        imageUrl: product.imageUrl,
         quantity,
       });
     }
@@ -83,7 +83,7 @@ const ProductPage: React.FC = () => {
 
   return (
     <div className="product-page">
-      {/* Breadcrumb для навігації */}
+      {/* Навігація (Breadcrumb) */}
       <Breadcrumb
         paths={[
           { label: 'Home', path: '/' },
@@ -107,7 +107,7 @@ const ProductPage: React.FC = () => {
               />
             ))}
           </div>
-          <img src={product.image} alt={product.name} className="main-image" />
+          <img src={product.imageUrl} alt={product.name} className="main-image" />
         </div>
 
         {/* Деталі продукту */}

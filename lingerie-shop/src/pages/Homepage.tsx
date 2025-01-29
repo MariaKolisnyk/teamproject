@@ -1,34 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import axios from 'axios';
-import HelpDesk from './HelpDesk'; // Компонент HelpDesk
-import { getNewCollection, getBestSellers, getTailoringProducts } from '../services/ProductService';
+import HelpDesk from './HelpDesk';
+import ArrowIcon from '../components/ArrowIcon';
+import {
+  getNewCollection,
+  getBestSellers,
+  getTailoringProducts,
+  getProductsOnSale, // Імпорт функції для продуктів зі знижками
+} from '../services/ProductService';
 
 import './Homepage.scss';
-import ArrowIcon from '../components/ArrowIcon';
-
-// Функція для отримання продуктів зі знижками
-const getProductsOnSale = async () => {
-  try {
-    const response = await axios.get(
-      'http://116.203.195.165:8080/api/v1/products/on-sale'
-    );
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching sale products:', error);
-    throw error;
-  }
-};
-
-// Масив брендів (завантаження на фронтенді)
-const brands = [
-  { id: 1, name: '', imageUrl: '/images/brand1.png' },
-  { id: 2, name: '', imageUrl: '/images/brand2.png' },
-  { id: 3, name: "", imageUrl: '/images/brand3.png' },
-  { id: 4, name: '', imageUrl: '/images/brand4.png' },
-  { id: 5, name: '', imageUrl: '/images/brand5.png' },
-  { id: 6, name: '', imageUrl: '/images/brand6.png' },
-];
 
 // Інтерфейс для продуктів
 interface Product {
@@ -38,54 +19,61 @@ interface Product {
   price: number;
 }
 
+// Масив брендів (статичний приклад)
+const brands = [
+  { id: 1, name: 'Brand 1', imageUrl: '/images/brand1.png' },
+  { id: 2, name: 'Brand 2', imageUrl: '/images/brand2.png' },
+  { id: 3, name: 'Brand 3', imageUrl: '/images/brand3.png' },
+  { id: 4, name: 'Brand 4', imageUrl: '/images/brand4.png' },
+];
+
 const Homepage: React.FC = () => {
-  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false); // Стан для відкриття меню HelpDesk
+  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false); // Відкриття Help Desk
   const [newCollectionProducts, setNewCollectionProducts] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [saleProducts, setSaleProducts] = useState<Product[]>([]);
   const [tailoringProducts, setTailoringProducts] = useState<Product[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [currentBrandPage, setCurrentBrandPage] = useState(0);
-  const brandsPerPage = 4; // Кількість брендів на сторінку
+  const brandsPerPage = 4;
 
   // Завантаження даних з API
   useEffect(() => {
-    getNewCollection().then((response) => setNewCollectionProducts(response.data));
-    getBestSellers().then((response) => setBestSellers(response.data));
-    getProductsOnSale()
-      .then((products) => setSaleProducts(products))
-      .catch((error) => {
-        console.error('Error fetching sale products:', error);
-        setError('Failed to load sale products.');
-      });
-
-    getTailoringProducts().then((response) => setTailoringProducts(response.data));
+    const fetchData = async () => {
+      try {
+        const [newCollection, bestSellers, sale, tailoring] = await Promise.all([
+          getNewCollection(), // Ендпоінт для нової колекції
+          getBestSellers(), // Ендпоінт для бестселерів
+          getProductsOnSale(), // Ендпоінт для продуктів зі знижками
+          getTailoringProducts(), // Ендпоінт для індивідуального пошиття
+        ]);
+        setNewCollectionProducts(newCollection.data);
+        setBestSellers(bestSellers.data);
+        setSaleProducts(sale.data);
+        setTailoringProducts(tailoring.data);
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load data. Please try again.');
+      }
+    };
+    fetchData();
   }, []);
 
-  // Відображення брендів для поточної сторінки
+  // Відображення брендів
   const displayedBrands = brands.slice(
     currentBrandPage * brandsPerPage,
     currentBrandPage * brandsPerPage + brandsPerPage
   );
 
-  // Логіка пагінації
   const handleBrandPagination = (direction: 'next' | 'prev') => {
-    setCurrentBrandPage((prevPage) => {
-      if (direction === 'next') {
-        return prevPage + 1 < Math.ceil(brands.length / brandsPerPage)
-          ? prevPage + 1
-          : prevPage;
-      } else {
-        return prevPage > 0 ? prevPage - 1 : 0;
-      }
-    });
+    setCurrentBrandPage((prevPage) =>
+      direction === 'next'
+        ? Math.min(prevPage + 1, Math.ceil(brands.length / brandsPerPage) - 1)
+        : Math.max(prevPage - 1, 0)
+    );
   };
 
-// Функція перемикання стану HelpDesk
-const toggleHelpDesk = () => {
-  setHelpDeskOpen((prevState) => !prevState);
-};
-
+  const toggleHelpDesk = () => setHelpDeskOpen((prev) => !prev);
   return (
     <div className="homepage">
       {/* Секція банера */}
