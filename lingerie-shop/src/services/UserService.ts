@@ -1,54 +1,92 @@
-// src/services/UserService.ts
-
 import axiosInstance from '../utils/axiosInstance';
 
 /**
- * Реєстрація користувача
- * Відповідає ендпоінту: /auth/register
- * @param userData Об'єкт із даними користувача
- * @returns Promise з відповіддю від API
+ * 🔹 Реєстрація нового користувача
+ * Використовує ендпоінт: `/auth/register`
+ * @param userData Об'єкт `{ email, password, name, surname }`
  */
-export const registerUser = async (userData: any) => {
-  return await axiosInstance.post('/auth/register', userData);
+export const registerUser = async (userData: Record<string, any>) => {
+  try {
+    const response = await axiosInstance.post('/auth/register', userData);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error registering user:', error.message);
+    throw error;
+  }
 };
 
 /**
- * Отримати всіх користувачів
- * Відповідає ендпоінту: /user/profile
- * (Ваша API документація не вказує ендпоінт для всіх користувачів)
- * Можливо, потрібно видалити цей метод, якщо він не підтримується бекендом.
+ * 🔹 Авторизація користувача (логін)
+ * Використовує ендпоінт: `/auth/login`
+ * @param credentials Об'єкт `{ email, password }`
  */
-export const getAllUsers = async () => {
-  console.warn("This endpoint is not defined in the provided API documentation.");
-  return await axiosInstance.get('/users');
+export const loginUser = async (credentials: { email: string; password: string }) => {
+  try {
+    const response = await axiosInstance.post('/auth/login', credentials);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error logging in user:', error.message);
+    throw error;
+  }
 };
 
 /**
- * Отримати користувача за ID
- * (Ендпоінт не вказаний у документації, перевірте його існування)
- * @param id Унікальний ідентифікатор користувача
+ * 🔹 Отримати профіль авторизованого користувача
+ * Використовує ендпоінт: `/user/profile/`
  */
-export const getUserById = async (id: number) => {
-  console.warn("This endpoint is not defined in the provided API documentation.");
-  return await axiosInstance.get(`/users/${id}`);
+export const getUserProfile = async () => {
+  try {
+    const response = await axiosInstance.get('/user/profile/');
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error fetching user profile:', error.message);
+    throw error;
+  }
 };
 
 /**
- * Видалити користувача
- * (Ендпоінт не вказаний у документації, перевірте його існування)
- * @param id Унікальний ідентифікатор користувача
+ * 🔹 Оновлення профілю користувача
+ * Використовує ендпоінт: `/user/profile/`
+ * @param profileData Об'єкт із оновленими даними профілю
  */
-export const deleteUser = async (id: number) => {
-  console.warn("This endpoint is not defined in the provided API documentation.");
-  return await axiosInstance.delete(`/users/${id}`);
+export const updateUserProfile = async (profileData: Record<string, any>) => {
+  try {
+    const response = await axiosInstance.put('/user/profile/', profileData);
+    return response.data;
+  } catch (error: any) {
+    console.error('❌ Error updating user profile:', error.message);
+    throw error;
+  }
 };
 
 /**
- * Отримати користувача за email
- * (Ендпоінт не вказаний у документації, перевірте його існування)
- * @param email Електронна адреса користувача
+ * 🔹 Вихід із системи (видалення токена)
  */
-export const getUserByEmail = async (email: string) => {
-  console.warn("This endpoint is not defined in the provided API documentation.");
-  return await axiosInstance.get(`/users/email/${email}`);
+export const logoutUser = () => {
+  localStorage.removeItem('authToken'); // Видаляємо токен авторизації
 };
+
+/**
+ * ❌ Тимчасово вимкнені методи, оскільки бекенд їх не підтримує.
+ * Якщо ці методи знадобляться, розкоментуй їх та уточни у бекенду.
+ */
+
+// export const getAllUsers = async () => {
+//   console.warn("⚠️ This endpoint is not defined in the provided API documentation.");
+//   return axiosInstance.get('/users');
+// };
+
+// export const getUserById = async (id: number) => {
+//   console.warn("⚠️ This endpoint is not defined in the provided API documentation.");
+//   return axiosInstance.get(`/users/${id}`);
+// };
+
+// export const deleteUser = async (id: number) => {
+//   console.warn("⚠️ This endpoint is not defined in the provided API documentation.");
+//   return axiosInstance.delete(`/users/${id}`);
+// };
+
+// export const getUserByEmail = async (email: string) => {
+//   console.warn("⚠️ This endpoint is not defined in the provided API documentation.");
+//   return axiosInstance.get(`/users/email/${email}`);
+// };

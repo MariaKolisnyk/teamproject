@@ -9,28 +9,48 @@ const SignUp: React.FC = () => {
 
   // Стан форми реєстрації
   const [formData, setFormData] = useState({
-    name: '',
-    surname: '',
+    first_name: '',
+    last_name: '',
     email: '',
+    phone: '',
     password: '',
+    confirm_password: '',
     agreeToTerms: false,
   });
 
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // Стан для перемикання видимості пароля
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string[]>>({}); // Помилки для полів форми
+  const [showPassword, setShowPassword] = useState(false); // Видимість пароля
 
   // Обробка зміни полів форми
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value, // Якщо чекбокс, використовуємо checked
+      [name]: type === 'checkbox' ? checked : value,
     });
+  };
+
+  // Функція для перевірки правильності номера телефону
+  const isValidPhoneNumber = (phone: string) => {
+    return /^\+?\d{9,15}$/.test(phone); // Перевіряємо, чи відповідає номер формату
   };
 
   // Обробка надсилання форми
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Перевірка паролів перед відправкою
+    if (formData.password !== formData.confirm_password) {
+      setError('Passwords do not match.');
+      return;
+    }
+
+    // Перевірка формату телефону перед відправкою
+    if (!isValidPhoneNumber(formData.phone)) {
+      setError('Phone number must contain 9 to 15 digits and can start with "+".');
+      return;
+    }
 
     // Перевірка згоди з політикою конфіденційності
     if (!formData.agreeToTerms) {
@@ -39,11 +59,13 @@ const SignUp: React.FC = () => {
     }
 
     try {
-      const response = await axiosInstance.post('/auth/register', {
-        name: formData.name,
-        surname: formData.surname,
+      const response = await axiosInstance.post('/auth/register/', {
         email: formData.email,
         password: formData.password,
+        confirm_password: formData.confirm_password,
+        first_name: formData.first_name,
+        last_name: formData.last_name,
+        phone: formData.phone,
       });
 
       console.log('Registration successful:', response.data);
@@ -52,7 +74,9 @@ const SignUp: React.FC = () => {
       navigate('/'); // Перенаправлення на головну сторінку
 
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Registration failed. Please try again.');
+      console.error('Registration error:', err.response?.data);
+      setError('Registration failed. Please check your inputs.');
+      setFieldErrors(err.response?.data || {}); // Зберігаємо помилки для полів
     }
   };
 
@@ -62,24 +86,28 @@ const SignUp: React.FC = () => {
         <div className="sign-up-form">
           <h2>CREATE AN ACCOUNT</h2>
           <form onSubmit={handleSubmit}>
-            <label>Name</label>
+            <label>First Name</label>
             <input
               type="text"
-              name="name"
-              placeholder="Enter your name"
-              value={formData.name}
+              name="first_name"
+              placeholder="Enter your first name"
+              value={formData.first_name}
               onChange={handleChange}
               required
             />
-            <label>Surname</label>
+            {fieldErrors.first_name && <p className="error-message">{fieldErrors.first_name[0]}</p>}
+
+            <label>Last Name</label>
             <input
               type="text"
-              name="surname"
-              placeholder="Enter your surname"
-              value={formData.surname}
+              name="last_name"
+              placeholder="Enter your last name"
+              value={formData.last_name}
               onChange={handleChange}
               required
             />
+            {fieldErrors.last_name && <p className="error-message">{fieldErrors.last_name[0]}</p>}
+
             <label>Email</label>
             <input
               type="email"
@@ -89,6 +117,19 @@ const SignUp: React.FC = () => {
               onChange={handleChange}
               required
             />
+            {fieldErrors.email && <p className="error-message">{fieldErrors.email[0]}</p>}
+
+            <label>Phone</label>
+            <input
+              type="text"
+              name="phone"
+              placeholder="Enter your phone number"
+              value={formData.phone}
+              onChange={handleChange}
+              required
+            />
+            {fieldErrors.phone && <p className="error-message">{fieldErrors.phone[0]}</p>}
+
             <label>Password</label>
             <div className="password-wrapper">
               <input
@@ -103,6 +144,19 @@ const SignUp: React.FC = () => {
                 {showPassword ? '🙈' : '👁️'}
               </span>
             </div>
+            {fieldErrors.password && <p className="error-message">{fieldErrors.password[0]}</p>}
+
+            <label>Confirm Password</label>
+            <input
+              type="password"
+              name="confirm_password"
+              placeholder="Confirm your password"
+              value={formData.confirm_password}
+              onChange={handleChange}
+              required
+            />
+            {fieldErrors.confirm_password && <p className="error-message">{fieldErrors.confirm_password[0]}</p>}
+
             <div className="terms">
               <label>
                 <input
@@ -116,29 +170,13 @@ const SignUp: React.FC = () => {
                 <Link to="/terms-of-use">Terms of use</Link> of this site.
               </label>
             </div>
+
             {error && <div className="error-message">{error}</div>}
+
             <button className="create-account-button" type="submit">
               CREATE AN ACCOUNT
             </button>
           </form>
-          <div className="or-section">or continue with</div>
-          <div className="social-buttons">
-            <button className="google">Google</button>
-            <button className="apple">Apple</button>
-            <button className="facebook">Facebook</button>
-          </div>
-          <p className="sign-in-link">
-            Already have an account? <Link to="/sign-in">Sign in</Link>
-          </p>
-        </div>
-        <div className="account-benefits">
-          <h3>ACCOUNT BENEFITS</h3>
-          <ul>
-            <li>Get a bonus for the first online purchase for new members.</li>
-            <li>Get cashback to your personal account for every order.</li>
-            <li>Use a more convenient way to make and track the order.</li>
-            <li>First to learn about interesting promotions.</li>
-          </ul>
         </div>
       </div>
       <Footer />

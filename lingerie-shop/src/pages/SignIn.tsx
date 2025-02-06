@@ -1,51 +1,45 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import axiosInstance from '../utils/axiosInstance'; // Використання глобального axios
+import axiosInstance from '../utils/axiosInstance';
 import Footer from '../components/Footer';
 import './SignIn.scss';
 
 const SignIn: React.FC = () => {
-  const navigate = useNavigate(); // Хук для редіректу
-
-  // Стан форми
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
-    rememberMe: false, // Чекбокс "Запам'ятати мене"
+    rememberMe: false,
   });
-
   const [error, setError] = useState<string | null>(null);
-  const [showPassword, setShowPassword] = useState(false); // Контроль видимості пароля
+  const [showPassword, setShowPassword] = useState(false);
 
-  // Обробка змін у полях
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value, // Якщо чекбокс, використовуємо checked
+      [name]: type === 'checkbox' ? checked : value,
     });
   };
 
-  // Обробка відправки форми
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault(); // Запобігання перезавантаженню сторінки
+    e.preventDefault();
 
     try {
-      const response = await axiosInstance.post('/auth/login', {
+      const response = await axiosInstance.post('/auth/login/', {
         email: formData.email,
         password: formData.password,
       });
 
-      // Збереження токена
+      const token = response.data.token;
       if (formData.rememberMe) {
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('authToken', token);
       } else {
-        sessionStorage.setItem('authToken', response.data.token);
+        sessionStorage.setItem('authToken', token);
       }
 
-      setError(null); // Очистити помилку
-      navigate('/'); // Перенаправлення на головну сторінку
-
+      setError(null);
+      navigate('/');
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed. Please try again.');
     }
@@ -66,7 +60,6 @@ const SignIn: React.FC = () => {
               onChange={handleChange}
               required
             />
-
             <label>Password</label>
             <div className="password-wrapper">
               <input
@@ -77,11 +70,8 @@ const SignIn: React.FC = () => {
                 onChange={handleChange}
                 required
               />
-              <span className="show-password-icon" onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? '🙈' : '👁️'}
-              </span>
+              <span onClick={() => setShowPassword(!showPassword)}>{showPassword ? '🙈' : '👁️'}</span>
             </div>
-
             <div className="options">
               <label>
                 <input
@@ -94,30 +84,11 @@ const SignIn: React.FC = () => {
               </label>
               <Link to="/forgot-password">Forgot password?</Link>
             </div>
-
             {error && <div className="error-message">{error}</div>}
-            
-            <button className="sign-in-button" type="submit">
-              SIGN IN
-            </button>
+            <button type="submit">SIGN IN</button>
           </form>
-
-          <div className="or-section">or continue with</div>
-          <div className="social-buttons">
-            <button className="google">Google</button>
-            <button className="apple">Apple</button>
-            <button className="facebook">Facebook</button>
-          </div>
-
-          <p className="sign-up-link">
-            Don’t have an account? <Link to="/sign-up">Create an account</Link>
-          </p>
-        </div>
-
-        <div className="sign-in-banner">
-          <img src="/images/sign-in-banner.jpg" alt="Sign In Banner" />
           <p>
-            WE WILL EMPHASIZE THE UNIQUENESS OF WOMEN WITH THE HELP OF COMFORTABLE UNDERWEAR.
+            Don’t have an account? <Link to="/sign-up">Create an account</Link>
           </p>
         </div>
       </div>

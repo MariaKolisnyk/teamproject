@@ -20,7 +20,7 @@ const pool = new Pool({
 });
 
 // 🛒 **1️⃣ Отримання всіх продуктів**
-app.get('/api/v1/products', async (req, res) => {
+app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products');
     res.json(result.rows);
@@ -31,7 +31,7 @@ app.get('/api/v1/products', async (req, res) => {
 });
 
 // 🔍 **2️⃣ Отримання продукту за ID**
-app.get('/api/v1/products/:id', async (req, res) => {
+app.get('/products/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('SELECT * FROM products WHERE id = $1', [id]);
@@ -48,7 +48,7 @@ app.get('/api/v1/products/:id', async (req, res) => {
 });
 
 // 🏷 **3️⃣ Отримання продуктів за категорією**
-app.get('/api/v1/category/:id', async (req, res) => {
+app.get('/category/:id', async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query('SELECT * FROM products WHERE category_id = $1', [id]);
@@ -60,7 +60,7 @@ app.get('/api/v1/category/:id', async (req, res) => {
 });
 
 // 💰 **4️⃣ Отримання продуктів зі знижками**
-app.get('/api/v1/products/on-sales', async (req, res) => {
+app.get('/products/on-sales', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM products WHERE discount > 0');
     res.json(result.rows);
@@ -71,7 +71,7 @@ app.get('/api/v1/products/on-sales', async (req, res) => {
 });
 
 // 🔎 **5️⃣ Пошук продуктів**
-app.get('/api/v1/products/search', async (req, res) => {
+app.get('/products/search', async (req, res) => {
   try {
     const { query } = req.query;
     const result = await pool.query(
@@ -86,7 +86,7 @@ app.get('/api/v1/products/search', async (req, res) => {
 });
 
 // 🛒 **6️⃣ Кошик (отримання товарів у кошику)**
-app.get('/api/v1/cart', async (req, res) => {
+app.get('/cart', async (req, res) => {
   try {
     const result = await pool.query('SELECT * FROM cart');
     res.json(result.rows);
@@ -97,7 +97,7 @@ app.get('/api/v1/cart', async (req, res) => {
 });
 
 // ➕ **7️⃣ Додавання продукту в кошик**
-app.post('/api/v1/cart/add', async (req, res) => {
+app.post('/cart/add', async (req, res) => {
   try {
     const { product_id, quantity } = req.body;
     const result = await pool.query(

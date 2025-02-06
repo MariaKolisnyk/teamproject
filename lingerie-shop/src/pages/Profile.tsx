@@ -1,28 +1,32 @@
-import React, { useState, useEffect } from 'react';
-import axiosInstance from '../utils/axiosInstance'; // Для взаємодії з API
-import './Profile.scss'; // Імпорт стилів
+import React, { useEffect, useState } from 'react';
+import axiosInstance from '../utils/axiosInstance'; // Використання глобального Axios
+import { useNavigate } from 'react-router-dom';
+import './Profile.scss'; // Підключення стилів
 
 const Profile: React.FC = () => {
+  const navigate = useNavigate();
+
+  // 📌 Стан для збереження даних користувача
   const [user, setUser] = useState({
     firstName: '',
     lastName: '',
     email: '',
     phone: '',
-  }); // Стан для збереження даних користувача
+  });
 
-  const [newPassword, setNewPassword] = useState(''); // Стан для нового пароля
-  const [message, setMessage] = useState<string | null>(null); // Стан для повідомлень
-  const [loading, setLoading] = useState(true); // Стан для завантаження
-  const [error, setError] = useState<string | null>(null); // Стан для помилок
+  const [newPassword, setNewPassword] = useState(''); // Стан нового пароля
+  const [message, setMessage] = useState<string | null>(null); // Повідомлення про успіх
+  const [error, setError] = useState<string | null>(null); // Повідомлення про помилку
+  const [loading, setLoading] = useState(true); // Стан завантаження профілю
 
-  // 📌 Завантаження даних користувача при відкритті сторінки
+  // 📌 Завантаження даних профілю
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
         const response = await axiosInstance.get('/user/profile/');
-        setUser(response.data);
+        setUser(response.data); // Заповнюємо поля профілю
       } catch (err) {
-        setError('Failed to load profile data');
+        setError('Failed to load profile data.');
       } finally {
         setLoading(false);
       }
@@ -38,7 +42,7 @@ const Profile: React.FC = () => {
       await axiosInstance.put('/user/profile/update', user);
       setMessage('Profile updated successfully!');
     } catch (err) {
-      setError('Failed to update profile');
+      setError('Failed to update profile.');
     }
   };
 
@@ -50,7 +54,7 @@ const Profile: React.FC = () => {
       setMessage('Password changed successfully!');
       setNewPassword('');
     } catch (err) {
-      setError('Failed to change password');
+      setError('Failed to change password.');
     }
   };
 
@@ -58,10 +62,10 @@ const Profile: React.FC = () => {
   const handleLogout = async () => {
     try {
       await axiosInstance.post('/auth/logout');
-      localStorage.removeItem('authToken'); // Видаляємо токен
-      window.location.href = '/sign-in'; // Перенаправлення на сторінку входу
+      localStorage.removeItem('authToken'); // Видалення токена
+      navigate('/sign-in'); // Перенаправлення на сторінку входу
     } catch (err) {
-      setError('Failed to logout');
+      setError('Failed to logout.');
     }
   };
 

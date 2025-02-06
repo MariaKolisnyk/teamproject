@@ -3,60 +3,56 @@ import axiosInstance from '../utils/axiosInstance';
 /**
  * Отримати нову колекцію товарів
  * Використовує ендпоінт: /products/new
- * @returns Promise з даними нової колекції
  */
 export const getNewCollection = async () => {
   try {
     const response = await axiosInstance.get('/products/new');
-    return response.data; // Повертаємо отримані дані
-  } catch (error) {
-    console.error('Error fetching new collection:', error);
-    throw error; // Передаємо помилку далі
+    return response.data || [];
+  } catch (error: any) {
+    console.error('❌ Error fetching new collection:', error.message);
+    return [];
   }
 };
 
 /**
  * Отримати найкращі товари (Best Sellers)
  * Використовує ендпоінт: /products/bestsellers
- * @returns Promise з даними бестселерів
  */
 export const getBestSellers = async () => {
   try {
     const response = await axiosInstance.get('/products/bestsellers');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching best sellers:', error);
-    throw error;
+    return response.data || [];
+  } catch (error: any) {
+    console.error('❌ Error fetching best sellers:', error.message);
+    return [];
   }
 };
 
 /**
  * Отримати товари зі знижками
  * Використовує ендпоінт: /products/on-sales
- * @returns Promise з даними товарів на розпродажу
  */
 export const getProductsOnSale = async () => {
   try {
     const response = await axiosInstance.get('/products/on-sales');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching products on sale:', error);
-    throw error;
+    return response.data || [];
+  } catch (error: any) {
+    console.error('❌ Error fetching products on sale:', error.message);
+    return [];
   }
 };
 
 /**
  * Отримати товари для індивідуального пошиття
  * Використовує ендпоінт: /products/tailoring
- * @returns Promise з даними товарів для пошиття
  */
 export const getTailoringProducts = async () => {
   try {
     const response = await axiosInstance.get('/products/tailoring');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching tailoring products:', error);
-    throw error;
+    return response.data || [];
+  } catch (error: any) {
+    console.error('❌ Error fetching tailoring products:', error.message);
+    return [];
   }
 };
 
@@ -64,15 +60,17 @@ export const getTailoringProducts = async () => {
  * Пошук товарів за фільтрами
  * Використовує ендпоінт: /products/search
  * @param filters Об'єкт із фільтрами для пошуку
- * @returns Promise з результатами пошуку
  */
-export const searchProducts = async (filters: any) => {
+export const searchProducts = async (filters: Record<string, any>) => {
   try {
     const response = await axiosInstance.post('/products/search', filters);
-    return response.data;
-  } catch (error) {
-    console.error('Error searching products:', error);
-    throw error;
+    if (response.status === 200) {
+      return response.data || [];
+    }
+    throw new Error(`Unexpected response status: ${response.status}`);
+  } catch (error: any) {
+    console.error('❌ Error searching products:', error.message);
+    return [];
   }
 };
 
@@ -80,14 +78,20 @@ export const searchProducts = async (filters: any) => {
  * Отримати інформацію про товар за його ID
  * Використовує ендпоінт: /products/{id}
  * @param id Унікальний ідентифікатор товару
- * @returns Promise з інформацією про товар
  */
 export const getProductById = async (id: number) => {
   try {
     const response = await axiosInstance.get(`/products/${id}`);
-    return response.data;
-  } catch (error) {
-    console.error(`Error fetching product with ID ${id}:`, error);
-    throw error;
+    if (response.status === 200) {
+      return response.data || null;
+    }
+    throw new Error(`Product not found (ID: ${id})`);
+  } catch (error: any) {
+    if (error.response?.status === 404) {
+      console.warn(`⚠️ Product with ID ${id} not found.`);
+      return null;
+    }
+    console.error(`❌ Error fetching product with ID ${id}:`, error.message);
+    return null;
   }
 };

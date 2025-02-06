@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import Breadcrumb from '../components/Breadcrumb'; // Компонент для відображення навігації
-import { useCart } from '../store/CartContext'; // Контекст для управління кошиком
-import './ProductPage.scss'; // Імпорт стилів сторінки
+import Breadcrumb from '../components/Breadcrumb'; // Навігація
+import { useCart } from '../store/CartContext'; // Контекст кошика
+import './ProductPage.scss'; // Стилі сторінки
 import axiosInstance from '../utils/axiosInstance'; // HTTP-запити
 
-// Опис інтерфейсу продукту
+// **Інтерфейс продукту**
 interface Product {
   id: number;
   name: string;
-  imageUrl: string; // Поле оновлене відповідно до API
+  image: string; // ✅ Використовуємо image замість imageUrl
   price: number;
   description: string;
-  laundryCare: string[]; // Інструкції по догляду
-  colorOptions: string[]; // Варіанти кольорів
-  sizes: string[]; // Варіанти розмірів
+  laundryCare: string[];
+  colorOptions: string[];
+  sizes: string[];
   rating: number;
 }
 
 const ProductPage: React.FC = () => {
   const { productId } = useParams<{ productId: string }>(); // Отримання ID продукту з URL
-  const [product, setProduct] = useState<Product | null>(null); // Стан для продукту
+  const [product, setProduct] = useState<Product | null>(null); // Стан продукту
   const [quantity, setQuantity] = useState(1); // Кількість обраного продукту
   const [selectedColor, setSelectedColor] = useState<string | null>(null); // Обраний колір
   const [selectedSize, setSelectedSize] = useState<string | null>(null); // Обраний розмір
@@ -28,14 +28,14 @@ const ProductPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true); // Стан завантаження
   const { addToCart } = useCart(); // Функція додавання до кошика
 
-  // Запит на отримання даних продукту
+  // 🔥 **Отримання даних про продукт**
   useEffect(() => {
     const fetchProduct = async () => {
       try {
-        const response = await axiosInstance.get<Product>(`/api/v1/products/${productId}`);
+        const response = await axiosInstance.get<Product>(`/products/${productId}`);
         setProduct(response.data);
-        setSelectedColor(response.data.colorOptions[0]); // Перший колір за замовчуванням
-        setSelectedSize(response.data.sizes[0]); // Перший розмір за замовчуванням
+        setSelectedColor(response.data.colorOptions?.[0] || null); // ✅ Вибираємо перший доступний колір
+        setSelectedSize(response.data.sizes?.[0] || null); // ✅ Вибираємо перший доступний розмір
       } catch (err) {
         console.error('Error fetching product:', err);
         setError('Failed to load product. Please try again.');
@@ -47,12 +47,12 @@ const ProductPage: React.FC = () => {
     fetchProduct();
   }, [productId]);
 
-  // Зміна кількості товару
+  // 🔥 **Функція для зміни кількості товару**
   const handleQuantityChange = (operation: 'increment' | 'decrement') => {
     setQuantity((prev) => (operation === 'increment' ? prev + 1 : Math.max(1, prev - 1)));
   };
 
-  // Додавання товару в кошик
+  // 🔥 **Функція для додавання товару до кошика**
   const handleAddToCart = () => {
     if (!selectedColor || !selectedSize) {
       setError('Please select a color and size before adding to cart.');
@@ -63,27 +63,19 @@ const ProductPage: React.FC = () => {
         id: product.id,
         name: product.name,
         price: product.price,
-        imageUrl: product.imageUrl,
+        image: product.image, // ✅ Передаємо image, а не imageUrl
         quantity,
       });
     }
   };
 
-  if (isLoading) {
-    return <div>Loading...</div>; // Відображення стану завантаження
-  }
-
-  if (error) {
-    return <div className="error-message">{error}</div>; // Відображення помилки
-  }
-
-  if (!product) {
-    return null; // Якщо продукт не знайдено
-  }
+  if (isLoading) return <div>Loading...</div>; // Відображення стану завантаження
+  if (error) return <div className="error-message">{error}</div>; // Відображення помилки
+  if (!product) return null; // Якщо продукт не знайдено
 
   return (
     <div className="product-page">
-      {/* Навігація (Breadcrumb) */}
+      {/* 🔥 **Навігація (Breadcrumb)** */}
       <Breadcrumb
         paths={[
           { label: 'Home', path: '/' },
@@ -92,9 +84,9 @@ const ProductPage: React.FC = () => {
         ]}
       />
 
-      {/* Основний контейнер продукту */}
+      {/* 🔥 **Основний контейнер продукту** */}
       <div className="product-container">
-        {/* Зображення продукту */}
+        {/* 🔥 **Зображення продукту** */}
         <div className="product-images">
           <div className="thumbnail-list">
             {product.colorOptions.map((color, index) => (
@@ -107,15 +99,15 @@ const ProductPage: React.FC = () => {
               />
             ))}
           </div>
-          <img src={product.imageUrl} alt={product.name} className="main-image" />
+          <img src={product.image} alt={product.name} className="main-image" />
         </div>
 
-        {/* Деталі продукту */}
+        {/* 🔥 **Деталі продукту** */}
         <div className="product-details">
           <h1>{product.name}</h1>
           <p className="product-code">Code: {product.id}</p>
 
-          {/* Кольори */}
+          {/* 🔥 **Кольори** */}
           <div className="product-colors">
             <h4>Colour</h4>
             <div className="color-options">
@@ -130,7 +122,7 @@ const ProductPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Розміри */}
+          {/* 🔥 **Розміри** */}
           <div className="product-sizes">
             <h4>Size</h4>
             <div className="size-options">
@@ -146,27 +138,27 @@ const ProductPage: React.FC = () => {
             </div>
           </div>
 
-          {/* Ціна */}
+          {/* 🔥 **Ціна** */}
           <div className="product-price">
             <h4>Price</h4>
             <p>${product.price.toFixed(2)}</p>
           </div>
 
-          {/* Селектор кількості */}
+          {/* 🔥 **Селектор кількості** */}
           <div className="quantity-selector">
             <button onClick={() => handleQuantityChange('decrement')}>-</button>
             <span>{quantity}</span>
             <button onClick={() => handleQuantityChange('increment')}>+</button>
           </div>
 
-          {/* Кнопка додавання до кошика */}
+          {/* 🔥 **Кнопка додавання до кошика** */}
           <button className="add-to-cart-button" onClick={handleAddToCart}>
             ADD TO CART
           </button>
         </div>
       </div>
 
-      {/* Опис продукту */}
+      {/* 🔥 **Опис продукту** */}
       <div className="product-description">
         <h3>Description</h3>
         <p>{product.description}</p>

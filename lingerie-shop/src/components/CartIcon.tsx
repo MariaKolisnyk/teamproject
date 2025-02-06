@@ -1,12 +1,12 @@
 import React from 'react';
-import { useCart } from '../store/CartContext'; // Імпорт контексту для кошика
-import './CartIcon.scss'; // Імпорт стилів для іконки
+import { useCart } from '../store/CartContext'; // Контекст кошика
+import './CartIcon.scss'; // Стилі для іконки
 
 const CartIcon: React.FC = () => {
   const { cart } = useCart(); // Отримуємо товари з кошика
 
-  // Підрахунок кількості товарів із fallback на 0
-  const cartCount = cart?.reduce((total, item) => total + item.quantity, 0) || 0;
+  // ✅ Гарантуємо, що `cart` — це масив, щоб уникнути помилки `.reduce()`
+  const cartCount = Array.isArray(cart) ? cart.reduce((total, item) => total + (item.quantity || 0), 0) : 0;
 
   return (
     <div className="cart-icon" aria-label={`Cart with ${cartCount} items`}>

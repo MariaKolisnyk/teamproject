@@ -2,24 +2,24 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import HelpDesk from './HelpDesk';
 import ArrowIcon from '../components/ArrowIcon';
-import {
-  getNewCollection,
-  getBestSellers,
-  getTailoringProducts,
-  getProductsOnSale, // Імпорт функції для продуктів зі знижками
-} from '../services/ProductService';
-
+import { getNewCollection, getProductsOnSale } from '../services/ProductService';
+import axiosInstance from '../utils/axiosInstance';
+import { useCart } from '../store/CartContext';
+import { useFavorites } from '../store/FavoritesContext';
 import './Homepage.scss';
 
-// Інтерфейс для продуктів
+// 🛠 Основний URL для отримання зображень з бекенду
+const BASE_URL = 'https://lingerie-shop.onrender.com';
+
 interface Product {
   id: number;
-  name: string;
-  imageUrl: string;
-  price: number;
+  title: string;
+  price: string; // API повертає `price` як string
+  available: boolean;
+  images: { id: number; image: string; is_main: boolean }[];
 }
 
-// Масив брендів (статичний приклад)
+// 🛠 Дані про бренди (локальний масив)
 const brands = [
   { id: 1, name: 'Brand 1', imageUrl: '/images/brand1.png' },
   { id: 2, name: 'Brand 2', imageUrl: '/images/brand2.png' },
@@ -28,43 +28,41 @@ const brands = [
 ];
 
 const Homepage: React.FC = () => {
-  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false); // Відкриття Help Desk
+  // 🛠 Стейт для роботи з UI
+  const [isHelpDeskOpen, setHelpDeskOpen] = useState(false);
   const [newCollectionProducts, setNewCollectionProducts] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [saleProducts, setSaleProducts] = useState<Product[]>([]);
-  const [tailoringProducts, setTailoringProducts] = useState<Product[]>([]);
-  const [error, setError] = useState<string | null>(null);
   const [currentBrandPage, setCurrentBrandPage] = useState(0);
   const brandsPerPage = 4;
 
-  // Завантаження даних з API
+  // 🛠 Контексти для роботи з кошиком і фаворитами
+  const { addToCart } = useCart();
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
+
+  // 🛠 Запити до бекенду для отримання продуктів
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [newCollection, bestSellers, sale, tailoring] = await Promise.all([
-          getNewCollection(), // Ендпоінт для нової колекції
-          getBestSellers(), // Ендпоінт для бестселерів
-          getProductsOnSale(), // Ендпоінт для продуктів зі знижками
-          getTailoringProducts(), // Ендпоінт для індивідуального пошиття
+        const [newCollection, sale, bestSellers] = await Promise.all([
+          getNewCollection(),
+          getProductsOnSale(),
+          axiosInstance.get('/products/top-sales/'),
         ]);
-        setNewCollectionProducts(newCollection.data);
-        setBestSellers(bestSellers.data);
-        setSaleProducts(sale.data);
-        setTailoringProducts(tailoring.data);
+
+        // 🛠 Оновлюємо стейт відповідно до отриманих даних
+        setNewCollectionProducts(newCollection?.data || []);
+        setBestSellers(bestSellers?.data || []);
+        setSaleProducts(sale?.data || []);
       } catch (err) {
-        console.error('Error fetching data:', err);
-        setError('Failed to load data. Please try again.');
+        console.error('❌ Помилка отримання даних:', err);
       }
     };
+
     fetchData();
   }, []);
 
-  // Відображення брендів
-  const displayedBrands = brands.slice(
-    currentBrandPage * brandsPerPage,
-    currentBrandPage * brandsPerPage + brandsPerPage
-  );
-
+  // 🛠 Пагінація брендів (обробка кнопок ліворуч/праворуч)
   const handleBrandPagination = (direction: 'next' | 'prev') => {
     setCurrentBrandPage((prevPage) =>
       direction === 'next'
@@ -73,10 +71,9 @@ const Homepage: React.FC = () => {
     );
   };
 
-  const toggleHelpDesk = () => setHelpDeskOpen((prev) => !prev);
   return (
     <div className="homepage">
-      {/* Секція банера */}
+      {/* 🔹 Банер */}
       <section className="banner-section">
         <div className="banner-content">
           <h1 className="banner-title">
@@ -89,144 +86,152 @@ const Homepage: React.FC = () => {
             <ArrowIcon color="#1F1F21" /> SHOP NOW
           </Link>
         </div>
-
-        {/* Кнопка Help Desk */}
-        <button className="help-desk-button" onClick={toggleHelpDesk}>
+        <button className="help-desk-button" onClick={() => setHelpDeskOpen((prev) => !prev)}>
           HELP DESK
         </button>
       </section>
 
-      {/* Відображення HelpDesk */}
-      {isHelpDeskOpen && <HelpDesk onClose={toggleHelpDesk} />}
-    
-       
-        
-  
-       {/* New Collection Section */}
+      {isHelpDeskOpen && <HelpDesk onClose={() => setHelpDeskOpen(false)} />}
+
+      {/* 🔹 Нова колекція */}
       <section className="collection-section">
         <h2 className="section-title">New Collection</h2>
         <div className="product-grid">
-          {newCollectionProducts.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.imageUrl} alt={product.name} className="product-image" />
-              <button className="product-button">{product.name.toUpperCase()}</button>
-            </div>
-          ))}
+          {newCollectionProducts?.map((product) => {
+            const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
+            const formattedPrice = parseFloat(product.price).toFixed(2);
+            return (
+              <div key={product.id} className="product-card">
+                <img src={mainImage} alt={product.title} />
+                <p>{product.title}</p>
+                <p>${formattedPrice}</p>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Best Sellers Section */}
+      {/* 🔹 Бестселери */}
       <section className="best-sellers-section">
         <h2 className="section-title">Best Sellers</h2>
         <div className="product-grid">
-          {bestSellers.map((product) => (
-            <div key={product.id} className="product-card">
-              <img src={product.imageUrl} alt={product.name} className="product-image" />
-              <div className="product-info">
-                <p>{product.name}</p>
-                <p>${product.price.toFixed(2)}</p>
+          {bestSellers?.map((product) => {
+            const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
+            const formattedPrice = parseFloat(product.price).toFixed(2);
+            return (
+              <div key={product.id} className="product-card">
+                <img src={mainImage} alt={product.title} />
+                <p>{product.title}</p>
+                <p>${formattedPrice}</p>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </section>
 
-      {/* Brands Section */}
+      {/* 🔹 Розпродаж */}
+      <section className="sale-section">
+        <h2 className="section-title">Sale</h2>
+        <div className="product-grid">
+          {saleProducts?.map((product) => {
+            const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
+            const formattedPrice = parseFloat(product.price).toFixed(2);
+            return (
+              <div key={product.id} className="product-card">
+                <img src={mainImage} alt={product.title} />
+                <p>{product.title}</p>
+                <p>${formattedPrice}</p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* 🔹 Бренди */}
       <section className="brands-banner">
         <h2 className="section-title">Our Brands</h2>
         <div className="brands-carousel">
-          <button
-            className="carousel-arrow left-arrow"
-            onClick={() => handleBrandPagination('prev')}
-            disabled={currentBrandPage === 0}
-          >
+          <button className="carousel-arrow left-arrow" onClick={() => handleBrandPagination('prev')} disabled={currentBrandPage === 0}>
             ←
           </button>
           <div className="brands-container">
-            {displayedBrands.map((brand) => (
+            {brands.slice(currentBrandPage * brandsPerPage, currentBrandPage * brandsPerPage + brandsPerPage).map((brand) => (
               <div key={brand.id} className="brand-logo">
                 <img src={brand.imageUrl} alt={brand.name} />
                 <p>{brand.name}</p>
               </div>
             ))}
           </div>
-          <button
-            className="carousel-arrow right-arrow"
-            onClick={() => handleBrandPagination('next')}
-            disabled={currentBrandPage + 1 >= Math.ceil(brands.length / brandsPerPage)}
-          >
+          <button className="carousel-arrow right-arrow" onClick={() => handleBrandPagination('next')} disabled={currentBrandPage + 1 >= Math.ceil(brands.length / brandsPerPage)}>
             →
           </button>
-        </div>
+          </div>
       </section>
 
-      {/* Sale Section */}
+
+      {/* 🔹 Розпродаж */}
       <section className="sale-section">
         <h2 className="section-title">Sale</h2>
-        {error ? (
-          <p className="error-message">{error}</p>
-        ) : (
-          <div className="product-grid">
-            {saleProducts.map((product) => (
+        <div className="product-grid">
+          {saleProducts?.map((product) => {
+            const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
+            const formattedPrice = parseFloat(product.price).toFixed(2);
+            return (
               <div key={product.id} className="product-card">
-                <img
-                  src={product.imageUrl}
-                  alt={product.name}
-                  className="product-image"
-                />
-                <div className="product-info">
-                  <p>{product.name}</p>
-                  <p>${product.price.toFixed(2)}</p>
-                </div>
+                <img src={mainImage} alt={product.title} />
+                <p>{product.title}</p>
+                <p>${formattedPrice}</p>
               </div>
-            ))}
-          </div>
-        )}
-      </section>
-
-      {/* About Us Section */}
-      <section className="about-us-section">
-        <div className="about-us-container">
-          <div className="advantages">
-            <h2 className="section-title">Our Shop Advantages</h2>
-            <div className="advantages-grid">
-              <div className="advantage">
-                <img src="/images/free-shipping.png" alt="Free Shipping" />
-                <p>Free Shipping</p>
-              </div>
-              <div className="advantage">
-                <img src="/images/secure-payment.png" alt="Secure Payment" />
-                <p>Secure Payment</p>
-              </div>
-              <div className="advantage">
-                <img src="/images/purchase-bonuses.png" alt="Purchase Bonuses" />
-                <p>Purchase Bonuses</p>
-              </div>
-              <div className="advantage">
-                <img src="/images/easy-return.png" alt="Easy Return" />
-                <p>Easy Return</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="about-us-text">
-            <h2 className="section-title">Few Words About Us</h2>
-            <p className="section-subtitle">
-              We care about women and create a great service to make them feel comfortable
-              in the right lingerie.
-            </p>
-            <button className="instagram-button">
-              <span>Our Instagram</span>
-              <ArrowIcon color="#AC643E" />
-            </button>
-            <div className="instagram-photos">
-              <img src="/images/ins1.png" alt=" " />
-              <img src="/images/ins2.png" alt=" " />
-              <img src="/images/ins3.png" alt=" " />
-            </div>
-          </div>
+            );
+          })}
         </div>
-      </section>           
+      </section>
+    
+   
+
+{/* About Us Section */}
+<section className="about-us-section">
+  <div className="about-us-container">
+    <div className="advantages">
+      <h2 className="section-title">Our Shop Advantages</h2>
+      <div className="advantages-grid">
+        <div className="advantage">
+          <img src="/images/free-shipping.png" alt="Free Shipping" />
+          <p>Free Shipping</p>
+        </div>
+        <div className="advantage">
+          <img src="/images/secure-payment.png" alt="Secure Payment" />
+          <p>Secure Payment</p>
+        </div>
+        <div className="advantage">
+          <img src="/images/purchase-bonuses.png" alt="Purchase Bonuses" />
+          <p>Purchase Bonuses</p>
+        </div>
+        <div className="advantage">
+          <img src="/images/easy-return.png" alt="Easy Return" />
+          <p>Easy Return</p>
+        </div>
+      </div>
+    </div>
+
+    <div className="about-us-text">
+      <h2 className="section-title">Few Words About Us</h2>
+      <p className="section-subtitle">
+        We care about women and create a great service to make them feel comfortable
+        in the right lingerie.
+      </p>
+      <button className="instagram-button">
+        <span>Our Instagram</span>
+        <ArrowIcon color="#AC643E" />
+      </button>
+      <div className="instagram-photos">
+        <img src="/images/ins1.png" alt=" " />
+        <img src="/images/ins2.png" alt=" " />
+        <img src="/images/ins3.png" alt=" " />
+      </div>
+    </div>
+        </div>
+      </section>
     </div>
   );
 };

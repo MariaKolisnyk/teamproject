@@ -1,24 +1,35 @@
 import axiosInstance from '../utils/axiosInstance';
 
 /**
- * Отримати всі категорії
- * Змінено URL на локальний API
+ * Отримати всі категорії товарів
  * @returns Promise з відповіддю від API
  */
 export const getAllCategories = async () => {
-  return axiosInstance.get('http://127.0.0.1:8080/api/v1/categories');
+  return axiosInstance.get('/categories'); // Видалено локальний URL
 };
 
 /**
- * Отримати кольори
- * Видалено функцію, оскільки немає ендпоінта для кольорів у списку API
+ * Отримати доступні кольори товарів
+ * Переконайтеся, що цей ендпоінт існує у Swagger
  */
- export const getColors = async () => {
-   return axiosInstance.get('/colors');
- };
+export const getColors = async () => {
+  try {
+    return await axiosInstance.get('/colors');
+  } catch (error) {
+    console.error('Failed to fetch colors:', error);
+    return { data: [] }; // Повертаємо порожній масив у разі помилки
+  }
+};
 
-
-
+/**
+ * Отримати доступні розміри товарів
+ * Переконайтеся, що цей ендпоінт існує у Swagger
+ */
 export const getSizes = async () => {
-   return axiosInstance.get('/sizes');
- };
+  try {
+    return await axiosInstance.get('/sizes');
+  } catch (error) {
+    console.error('Failed to fetch sizes:', error);
+    return { data: [] }; // Повертаємо порожній масив у разі помилки
+  }
+};

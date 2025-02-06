@@ -10,113 +10,43 @@ import CheckoutPage from './pages/CheckoutPage';
 import SignIn from './pages/SignIn';
 import SignUp from './pages/SignUp';
 import NotFound from './pages/NotFound';
-import { FavoritesProvider } from './store/FavoritesContext';
-import { CartProvider } from './store/CartContext';
 import CartPage from './pages/CartPage';
 import ForgotPassword from './pages/ForgotPassword';
+import { FavoritesProvider } from './store/FavoritesContext';
+import { CartProvider } from './store/CartContext';
+
+// 🔹 Визначення всіх маршрутів в масиві
+const routes = [
+  { path: '/', component: <Homepage /> },
+  { path: '/sign-in', component: <SignIn /> },
+  { path: '/sign-up', component: <SignUp /> },
+  { path: '/forgot-password', component: <ForgotPassword /> },
+  { path: '/search', component: <Search /> },
+  { path: '/profile', component: <Profile /> },
+  { path: '/favorites', component: <Favorites /> },
+  { path: '/cart', component: <CartPage /> },
+  { path: '/catalog', component: <CatalogPage /> },
+  { path: '/checkout', component: <CheckoutPage /> },
+  { path: '*', component: <NotFound /> }, // ❗️404 сторінка
+];
 
 const App: React.FC = () => {
   if (process.env.NODE_ENV === 'development') {
-    console.log('API URL:', process.env.REACT_APP_API_URL);
+    console.log('🔹 API URL:', process.env.REACT_APP_API_URL || '⚠️ NOT DEFINED');
   }
 
   return (
-    <FavoritesProvider>
-      <CartProvider>
-        <Router>
+    <Router basename={process.env.PUBLIC_URL?.trim() ? process.env.PUBLIC_URL : '/'}>
+      <FavoritesProvider>
+        <CartProvider>
           <Routes>
-            <Route
-              path="/"
-              element={
-                <Layout>
-                  <Homepage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/sign-in"
-              element={
-                <Layout>
-                  <SignIn />
-                </Layout>
-              }
-            />
-            <Route
-              path="/sign-up"
-              element={
-                <Layout>
-                  <SignUp />
-                </Layout>
-              }
-            />
-            <Route
-              path="/forgot-password"
-              element={
-                <Layout>
-                  <ForgotPassword />
-                </Layout>
-              }
-            />
-            <Route
-              path="/search"
-              element={
-                <Layout>
-                  <Search />
-                </Layout>
-              }
-            />
-            <Route
-              path="/profile"
-              element={
-                <Layout>
-                  <Profile />
-                </Layout>
-              }
-            />
-            <Route
-              path="/favorites"
-              element={
-                <Layout>
-                  <Favorites />
-                </Layout>
-              }
-            />
-            <Route
-              path="/cart"
-              element={
-                <Layout>
-                  <CartPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/catalog"
-              element={
-                <Layout>
-                  <CatalogPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="/checkout"
-              element={
-                <Layout>
-                  <CheckoutPage />
-                </Layout>
-              }
-            />
-            <Route
-              path="*"
-              element={
-                <Layout>
-                  <NotFound />
-                </Layout>
-              }
-            />
+            {routes.map(({ path, component }) => (
+              <Route key={path} path={path} element={<Layout>{component}</Layout>} />
+            ))}
           </Routes>
-        </Router>
-      </CartProvider>
-    </FavoritesProvider>
+        </CartProvider>
+      </FavoritesProvider>
+    </Router>
   );
 };
 

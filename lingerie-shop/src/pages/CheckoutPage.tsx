@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom'; // Навігація після оформлення замовлення
-import axiosInstance from '../utils/axiosInstance'; // Axios для запитів до API
-import { useCart } from '../store/CartContext'; // Контекст для роботи з кошиком
-import './CheckoutPage.scss'; // Стилі сторінки
+import { useNavigate } from 'react-router-dom';
+import axiosInstance from '../utils/axiosInstance';
+import { useCart } from '../store/CartContext';
+import './CheckoutPage.scss';
 
 const CheckoutPage: React.FC = () => {
   const navigate = useNavigate();
-  const { cart, clearCart } = useCart(); // Отримуємо кошик і функцію очищення
-  const [step, setStep] = useState(1); // Керування етапами оформлення замовлення
+  const { cart, clearCart } = useCart();
+
+  const [step, setStep] = useState(1);
   const [contactInfo, setContactInfo] = useState({
     firstName: '',
     lastName: '',
@@ -22,16 +23,20 @@ const CheckoutPage: React.FC = () => {
     deliveryCost: 35.0,
     promoDiscount: 0.0,
   });
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // 🚀 Отримуємо профіль користувача при завантаженні сторінки
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axiosInstance.get('/user/profile/');
+        const response = await axiosInstance.get('/user/profile');
         const { firstName, lastName, phone, email } = response.data;
         setContactInfo({ firstName, lastName, phone, email });
-      } catch (error) {
-        console.error('Failed to fetch user profile:', error);
+      } catch (err) {
+        setError('Failed to load profile data');
+      } finally {
+        setLoading(false);
       }
     };
 
@@ -45,17 +50,13 @@ const CheckoutPage: React.FC = () => {
   }, [cart]);
 
   // 📌 Перехід між етапами
-  const handleNextStep = () => {
-    if (step < 3) setStep((prev) => prev + 1);
-  };
-  const handlePreviousStep = () => {
-    if (step > 1) setStep((prev) => prev - 1);
-  };
+  const handleNextStep = () => setStep((prev) => Math.min(prev + 1, 3));
+  const handlePreviousStep = () => setStep((prev) => Math.max(prev - 1, 1));
 
   // 🎟️ Застосування промокоду
   const applyPromoCode = async () => {
     try {
-      const response = await axiosInstance.post('/order/apply-promo/', { code: promoCode });
+      const response = await axiosInstance.post('/order/apply-promo', { code: promoCode });
       setOrderSummary((prev) => ({
         ...prev,
         promoDiscount: response.data.discountAmount,
@@ -68,6 +69,11 @@ const CheckoutPage: React.FC = () => {
 
   // ✅ Відправлення замовлення
   const handleSubmitOrder = async () => {
+    if (!contactInfo.firstName || !contactInfo.lastName || !contactInfo.phone || !contactInfo.email) {
+      alert('Please fill in all contact information.');
+      return;
+    }
+
     try {
       const orderData = {
         contactInfo,
@@ -80,14 +86,17 @@ const CheckoutPage: React.FC = () => {
         promoCode,
       };
 
-      await axiosInstance.post('/order/create/', orderData);
-      clearCart(); // Очищаємо кошик після оформлення замовлення
-      navigate('/order-confirmation'); // Перенаправляємо на сторінку підтвердження
+      await axiosInstance.post('/order/create', orderData);
+      clearCart();
+      navigate('/order-confirmation');
     } catch (error) {
       console.error('Failed to submit order:', error);
       alert('Something went wrong. Please try again.');
     }
   };
+
+  if (loading) return <p>Loading checkout...</p>;
+  if (error) return <p className="error-message">{error}</p>;
 
   return (
     <div className="checkout-page">

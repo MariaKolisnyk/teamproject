@@ -30,7 +30,7 @@ const ProductList: React.FC = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axiosInstance.get<ProductGetResponse[]>('/api/v1/products');
+        const response = await axiosInstance.get<ProductGetResponse[]>('/products');
         const mappedProducts: Product[] = response.data.map((product) => ({
           id: product.id,
           name: product.name,
