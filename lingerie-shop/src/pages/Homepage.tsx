@@ -54,19 +54,30 @@ const Homepage: React.FC = () => {
     fetchSaleProducts();
   }, []);
 
-  // 🛠 Запити до бекенду для отримання продуктів
+  // Завантаження бестселерів
+  useEffect(() => {
+    const fetchBestSellers = async () => {
+      try {
+        const response = await axiosInstance.get('/products/top-sales/');
+        setBestSellers(response.data);
+      } catch (err) {
+        console.error('Не вдалося завантажити бестселери');
+      }
+    };
+
+    fetchBestSellers();
+  }, []);
+
+  // Завантаження інших продуктів (нова колекція, розпродаж)
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [newCollection, sale, bestSellers] = await Promise.all([
+        const [newCollection, sale] = await Promise.all([
           getNewCollection(),
           getProductsOnSale(),
-          axiosInstance.get('/products/top-sales/'),
         ]);
 
-        // 🛠 Оновлюємо стейт відповідно до отриманих даних
         setNewCollectionProducts(newCollection?.data || []);
-        setBestSellers(bestSellers?.data || []);
         setSaleProducts(sale?.data || []);
       } catch (err) {
         console.error('❌ Помилка отримання даних:', err);
@@ -76,7 +87,7 @@ const Homepage: React.FC = () => {
     fetchData();
   }, []);
 
-  // 🛠 Пагінація брендів (обробка кнопок ліворуч/праворуч)
+  // Пагінація брендів (обробка кнопок ліворуч/праворуч)
   const handleBrandPagination = (direction: 'next' | 'prev') => {
     setCurrentBrandPage((prevPage) =>
       direction === 'next'
@@ -84,6 +95,7 @@ const Homepage: React.FC = () => {
         : Math.max(prevPage - 1, 0)
     );
   };
+
 
   return (
     <div className="homepage">
@@ -125,18 +137,51 @@ const Homepage: React.FC = () => {
         </div>
       </section>
 
-      {/* 🔹 Бестселери */}
-      <section className="best-sellers-section">
+       {/* 🔹 Бестселери */}
+       <section className="best-sellers-section">
         <h2 className="section-title">Best Sellers</h2>
         <div className="product-grid">
           {bestSellers?.map((product) => {
             const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
             const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
+
             return (
               <div key={product.id} className="product-card">
-                <img src={mainImage} alt={product.title} />
+                <img src={`${BASE_URL}${mainImage}`} alt={product.title} />
                 <p>{product.title}</p>
                 <p>${formattedPrice}</p>
+                <div className="product-actions">
+                  <button
+                    className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
+                    onClick={() =>
+                      favorites.some((fav) => fav.id === product.id)
+                        ? removeFromFavorites(product.id)
+                        : addToFavorites({
+                            id: product.id,
+                            name: product.title,
+                            price: parseFloat(product.price),
+                            image: `${BASE_URL}${mainImage}`,
+                          })
+                    }
+                  >
+                    ❤
+                  </button>
+
+                  <button
+                    className="add-to-cart-button"
+                    onClick={() =>
+                      addToCart({
+                        id: product.id,
+                        name: product.title,
+                        price: parseFloat(product.price),
+                        image: `${BASE_URL}${mainImage}`,
+                        quantity: 1,
+                      })
+                    }
+                  >
+                    Add to Cart
+                  </button>
+                </div>
               </div>
             );
           })}
@@ -165,60 +210,63 @@ const Homepage: React.FC = () => {
         </div>
       </section>
       {/* 🔹 Розпродаж */}
-<section className="sale-section">
-  <h2 className="section-title">Sale</h2>
-  <div className="product-grid">
-    {saleProducts?.map((product) => {
-      const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
-      const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
+      <section className="sale-section">
+      <h2 className="section-title">Sale</h2>
+      <div className="product-grid">
+        {/* Перевіряємо, чи є товари на розпродажу */}
+        {saleProducts.length > 0 ? (
+          saleProducts.map((product) => {
+            const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
+            const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
 
-      return (
-        <div key={product.id} className="product-card">
-          <img src={mainImage ? `${BASE_URL}${mainImage}` : '/images/placeholder.png'} alt={product.title} />
-          <p>{product.title}</p>
-          <p>${formattedPrice}</p>
+            return (
+              <div key={product.id} className="product-card">
+                <img src={`${BASE_URL}${mainImage}`} alt={product.title} />
+                <p>{product.title}</p>
+                <p>${formattedPrice}</p>
 
-          <div className="product-actions">
-            {/* Додавання до обраного */}
-            <button
-              className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
-              onClick={() =>
-                favorites.some((fav) => fav.id === product.id)
-                  ? removeFromFavorites(product.id)
-                  : addToFavorites({
-                      id: product.id,
-                      name: product.title,
-                      price: parseFloat(product.price),
-                      image: mainImage ? `${BASE_URL}${mainImage}` : '/images/placeholder.png',
-                    })
-              }
-            >
-              ❤
-            </button>
+                <div className="product-actions">
+                  {/* Додавання до обраного */}
+                  <button
+                    className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
+                    onClick={() =>
+                      favorites.some((fav) => fav.id === product.id)
+                        ? removeFromFavorites(product.id)
+                        : addToFavorites({
+                            id: product.id,
+                            name: product.title,
+                            price: parseFloat(product.price),
+                            image: `${BASE_URL}${mainImage}`,
+                          })
+                    }
+                  >
+                    ❤
+                  </button>
 
-            {/* Додавання до кошика */}
-            <button
-              className="add-to-cart-button"
-              onClick={() =>
-                addToCart({
-                  id: product.id,
-                  name: product.title,
-                  price: parseFloat(product.price),
-                  image: mainImage ? `${BASE_URL}${mainImage}` : '/images/placeholder.png',
-                  quantity: 1,
-                })
-              }
-            >
-              Add to Cart
-            </button>
-          </div>
-        </div>
-      );
-    })}
-    {/* Якщо товарів на розпродажу немає, просто відображаємо повідомлення */}
-    {saleProducts?.length === 0 && <p>No sale items available at the moment.</p>}
-  </div>
-</section>
+                  {/* Додавання до кошика */}
+                  <button
+                    className="add-to-cart-button"
+                    onClick={() =>
+                      addToCart({
+                        id: product.id,
+                        name: product.title,
+                        price: parseFloat(product.price),
+                        image: `${BASE_URL}${mainImage}`,
+                        quantity: 1,
+                      })
+                    }
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            );
+          })
+        ) : (
+          <p>There are currently no products on sale.</p> 
+        )}
+      </div>
+    </section>
 
       {/* About Us Section */}
       <section className="about-us-section">
@@ -256,9 +304,9 @@ const Homepage: React.FC = () => {
               <ArrowIcon color="#AC643E" />
             </button>
             <div className="instagram-photos">
-            <img src="/images/ins1.png" alt=" " />
-            <img src="/images/ins2.png" alt=" " />
-            <img src="/images/ins3.png" alt=" " />
+            <img src="/images/ins1.jpg" alt=" " />
+            <img src="/images/ins2.jpg" alt=" " />
+            <img src="/images/ins3.jpg" alt=" " />
             </div>
           </div>
         </div>
