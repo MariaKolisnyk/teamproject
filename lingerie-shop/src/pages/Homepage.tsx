@@ -211,63 +211,59 @@ const Homepage: React.FC = () => {
       </section>
       {/* 🔹 Розпродаж */}
       <section className="sale-section">
-      <h2 className="section-title">Sale</h2>
-      <div className="product-grid">
-        {/* Перевіряємо, чи є товари на розпродажу */}
-        {saleProducts.length > 0 ? (
-          saleProducts.map((product) => {
-            const mainImage = product.images.find((img) => img.is_main)?.image || product.images[0]?.image || '/images/placeholder.png';
-            const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
+  <h2 className="section-title">Sale</h2>
+  <div className="product-grid">
+    {/* Завжди відображаємо продукти з розпродажу */}
+    {saleProducts.map((product) => {
+      // Якщо немає головного зображення, використовуємо fallback
+      const mainImage = product.images.find((img) => img.is_main)?.image || '/images/placeholder.png';
+      const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
 
-            return (
-              <div key={product.id} className="product-card">
-                <img src={`${BASE_URL}${mainImage}`} alt={product.title} />
-                <p>{product.title}</p>
-                <p>${formattedPrice}</p>
+      return (
+        <div key={product.id} className="product-card">
+          <img src={`${BASE_URL}${mainImage}`} alt={product.title} />
+          <p>{product.title}</p>
+          <p>${formattedPrice}</p>
 
-                <div className="product-actions">
-                  {/* Додавання до обраного */}
-                  <button
-                    className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
-                    onClick={() =>
-                      favorites.some((fav) => fav.id === product.id)
-                        ? removeFromFavorites(product.id)
-                        : addToFavorites({
-                            id: product.id,
-                            name: product.title,
-                            price: parseFloat(product.price),
-                            image: `${BASE_URL}${mainImage}`,
-                          })
-                    }
-                  >
-                    ❤
-                  </button>
+          <div className="product-actions">
+            {/* Додавання до обраного */}
+            <button
+              className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
+              onClick={() =>
+                favorites.some((fav) => fav.id === product.id)
+                  ? removeFromFavorites(product.id)
+                  : addToFavorites({
+                      id: product.id,
+                      name: product.title,
+                      price: parseFloat(product.price),
+                      image: `${BASE_URL}${mainImage}`,
+                    })
+              }
+            >
+              ❤
+            </button>
 
-                  {/* Додавання до кошика */}
-                  <button
-                    className="add-to-cart-button"
-                    onClick={() =>
-                      addToCart({
-                        id: product.id,
-                        name: product.title,
-                        price: parseFloat(product.price),
-                        image: `${BASE_URL}${mainImage}`,
-                        quantity: 1,
-                      })
-                    }
-                  >
-                    Add to Cart
-                  </button>
-                </div>
-              </div>
-            );
-          })
-        ) : (
-          <p>There are currently no products on sale.</p> 
-        )}
-      </div>
-    </section>
-
+            {/* Додавання до кошика */}
+            <button
+              className="add-to-cart-button"
+              onClick={() =>
+                addToCart({
+                  id: product.id,
+                  name: product.title,
+                  price: parseFloat(product.price),
+                  image: `${BASE_URL}${mainImage}`,
+                  quantity: 1,
+                })
+              }
+            >
+              Add to Cart
+            </button>
+          </div>
+        </div>
+      );
+    })}
+  </div>
+</section>
       {/* About Us Section */}
       <section className="about-us-section">
         <div className="about-us-container">
