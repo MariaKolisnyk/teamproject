@@ -31,7 +31,7 @@ const SignIn: React.FC = () => {
         password: formData.password,
       });
 
-      const token = response.data.token;
+      const token = response.data.access;
       if (formData.rememberMe) {
         localStorage.setItem('authToken', token);
       } else {

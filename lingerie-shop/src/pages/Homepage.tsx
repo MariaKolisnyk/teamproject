@@ -2,11 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom'; // Навігація між сторінками
 import HelpDesk from './HelpDesk';
 import ArrowIcon from '../components/ArrowIcon';
-import { getNewCollection, getProductsOnSale } from '../services/ProductService';
+import { productService } from '../services/ProductService'; // Імпортуємо екземпляр
 import axiosInstance from '../utils/axiosInstance';
 import { useCart } from '../store/CartContext';
 import { useFavorites } from '../store/FavoritesContext';
 import './Homepage.scss';
+import ShopNowButton from '../assets/icons/button-shop-now.svg';
+ // Імпортуємо кнопку
+ import ExploreButton from '../assets/icons/button-explore.svg'; // Вказуємо правильний шлях
+ import ArrowLeft from '../assets/icons/arrow-left.svg'; // шлях до свг стрілки вліво
+ import ArrowRight from '../assets/icons/arrow-right.svg'; // шлях до свг стрілки вправо
+ 
 
 // 🛠 Основний URL для отримання зображень з бекенду
 const BASE_URL = 'https://lingerie-shop.onrender.com';
@@ -28,13 +34,12 @@ const brands = [
 ];
 
 const Homepage: React.FC = () => {
-  // 🛠 Стейт для роботи з UI
   const [isHelpDeskOpen, setHelpDeskOpen] = useState(false);
   const [newCollectionProducts, setNewCollectionProducts] = useState<Product[]>([]);
   const [bestSellers, setBestSellers] = useState<Product[]>([]);
   const [saleProducts, setSaleProducts] = useState<Product[]>([]);
 
-  const [currentBrandPage, setCurrentBrandPage] = useState(0); // Оголошення стейту для пагінації
+  const [currentBrandPage, setCurrentBrandPage] = useState(0);
   const brandsPerPage = 4; // Кількість брендів на одній сторінці
 
   const { addToCart } = useCart();
@@ -50,7 +55,6 @@ const Homepage: React.FC = () => {
         console.error('Не вдалося завантажити товари на розпродажі');
       }
     };
-
     fetchSaleProducts();
   }, []);
 
@@ -64,30 +68,23 @@ const Homepage: React.FC = () => {
         console.error('Не вдалося завантажити бестселери');
       }
     };
-
     fetchBestSellers();
   }, []);
 
-  // Завантаження інших продуктів (нова колекція, розпродаж)
+  // Завантаження нової колекції
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [newCollection, sale] = await Promise.all([
-          getNewCollection(),
-          getProductsOnSale(),
-        ]);
-
-        setNewCollectionProducts(newCollection?.data || []);
-        setSaleProducts(sale?.data || []);
+        const newCollection = await productService.getNewCollection();
+        setNewCollectionProducts(newCollection || []);
       } catch (err) {
         console.error('❌ Помилка отримання даних:', err);
       }
     };
-
     fetchData();
   }, []);
 
-  // Пагінація брендів (обробка кнопок ліворуч/праворуч)
+  // Пагінація брендів
   const handleBrandPagination = (direction: 'next' | 'prev') => {
     setCurrentBrandPage((prevPage) =>
       direction === 'next'
@@ -95,7 +92,6 @@ const Homepage: React.FC = () => {
         : Math.max(prevPage - 1, 0)
     );
   };
-
 
   return (
     <div className="homepage">
@@ -109,7 +105,8 @@ const Homepage: React.FC = () => {
             In our store, you can buy ready-made designer underwear or bring to life any of your sketches.
           </p>
           <Link to="/catalog" className="shop-now-button">
-            <ArrowIcon color="#1F1F21" /> SHOP NOW
+            {/* Додаємо кнопку за допомогою SVG */}
+            <img src={`${process.env.PUBLIC_URL}/assets/icons/button-shop-now.svg`} alt="Shop Now" />
           </Link>
         </div>
         <button className="help-desk-button" onClick={() => setHelpDeskOpen((prev) => !prev)}>
@@ -137,8 +134,8 @@ const Homepage: React.FC = () => {
         </div>
       </section>
 
-       {/* 🔹 Бестселери */}
-       <section className="best-sellers-section">
+      {/* 🔹 Бестселери */}
+      <section className="best-sellers-section">
         <h2 className="section-title">Best Sellers</h2>
         <div className="product-grid">
           {bestSellers?.map((product) => {
@@ -188,82 +185,81 @@ const Homepage: React.FC = () => {
         </div>
       </section>
 
-
-      {/* 🔹 Бренди */}
-      <section className="brands-banner">
-        <h2 className="section-title">Our Brands</h2>
-        <div className="brands-carousel">
-          <button className="carousel-arrow left-arrow" onClick={() => handleBrandPagination('prev')} disabled={currentBrandPage === 0}>
-            ←
-          </button>
-          <div className="brands-container">
-            {brands.slice(currentBrandPage * 4, currentBrandPage * 4 + 4).map((brand) => (
-              <div key={brand.id} className="brand-logo">
-                <img src={brand.imageUrl} alt={brand.name} />
-                <p>{brand.name}</p>
-              </div>
-            ))}
-          </div>
-          <button className="carousel-arrow right-arrow" onClick={() => handleBrandPagination('next')} disabled={currentBrandPage + 1 >= Math.ceil(brands.length / 4)}>
-            →
-          </button>
+    {/* 🔹 Бренди */}
+<section className="brands-banner">
+  <h2 className="section-title">Our Brands</h2>
+  <div className="brands-carousel">
+    <button className="carousel-arrow left-arrow" onClick={() => handleBrandPagination('prev')} disabled={currentBrandPage === 0}>
+      <img src="/assets/icons/arrow-left.svg" alt="Previous" />
+    </button>
+    <div className="brands-container">
+      {brands.slice(currentBrandPage * 4, currentBrandPage * 4 + 4).map((brand) => (
+        <div key={brand.id} className="brand-logo">
+          <img src={brand.imageUrl} alt={brand.name} />
+          <p>{brand.name}</p>
         </div>
-      </section>
-      {/* 🔹 Розпродаж */}
-      <section className="sale-section">
-  <h2 className="section-title">Sale</h2>
-  <div className="product-grid">
-    {/* Завжди відображаємо продукти з розпродажу */}
-    {saleProducts.map((product) => {
-      // Якщо немає головного зображення, використовуємо fallback
-      const mainImage = product.images.find((img) => img.is_main)?.image || '/images/placeholder.png';
-      const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
-
-      return (
-        <div key={product.id} className="product-card">
-          <img src={`${BASE_URL}${mainImage}`} alt={product.title} />
-          <p>{product.title}</p>
-          <p>${formattedPrice}</p>
-
-          <div className="product-actions">
-            {/* Додавання до обраного */}
-            <button
-              className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
-              onClick={() =>
-                favorites.some((fav) => fav.id === product.id)
-                  ? removeFromFavorites(product.id)
-                  : addToFavorites({
-                      id: product.id,
-                      name: product.title,
-                      price: parseFloat(product.price),
-                      image: `${BASE_URL}${mainImage}`,
-                    })
-              }
-            >
-              ❤
-            </button>
-
-            {/* Додавання до кошика */}
-            <button
-              className="add-to-cart-button"
-              onClick={() =>
-                addToCart({
-                  id: product.id,
-                  name: product.title,
-                  price: parseFloat(product.price),
-                  image: `${BASE_URL}${mainImage}`,
-                  quantity: 1,
-                })
-              }
-            >
-              Add to Cart
-            </button>
-          </div>
-        </div>
-      );
-    })}
+      ))}
+    </div>
+    <button className="carousel-arrow right-arrow" onClick={() => handleBrandPagination('next')} disabled={currentBrandPage + 1 >= Math.ceil(brands.length / 4)}>
+      <img src="/assets/icons/arrow-right.svg" alt="Next" />
+    </button>
   </div>
 </section>
+
+
+
+      {/* 🔹 Розпродаж */}
+      <section className="sale-section">
+        <h2 className="section-title">Sale</h2>
+        <div className="product-grid">
+          {saleProducts.map((product) => {
+            const mainImage = product.images.find((img) => img.is_main)?.image || '/images/placeholder.png';
+            const formattedPrice = parseFloat(product.price).toFixed(2); // Перетворюємо рядок в число
+
+            return (
+              <div key={product.id} className="product-card">
+                <img src={`${mainImage}`} alt={product.title} />
+                <p>{product.title}</p>
+                <p>${formattedPrice}</p>
+
+                <div className="product-actions">
+                  <button
+                    className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
+                    onClick={() =>
+                      favorites.some((fav) => fav.id === product.id)
+                        ? removeFromFavorites(product.id)
+                        : addToFavorites({
+                            id: product.id,
+                            name: product.title,
+                            price: parseFloat(product.price),
+                            image: `${BASE_URL}${mainImage}`,
+                          })
+                    }
+                  >
+                    ❤
+                  </button>
+
+                  <button
+                    className="add-to-cart-button"
+                    onClick={() =>
+                      addToCart({
+                        id: product.id,
+                        name: product.title,
+                        price: parseFloat(product.price),
+                        image: `${BASE_URL}${mainImage}`,
+                        quantity: 1,
+                      })
+                    }
+                  >
+                    Add to Cart
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
       {/* About Us Section */}
       <section className="about-us-section">
         <div className="about-us-container">
@@ -295,14 +291,15 @@ const Homepage: React.FC = () => {
               We care about women and create a great service to make them feel comfortable
               in the right lingerie.
             </p>
-            <button className="instagram-button">
-              <span>Our Instagram</span>
-              <ArrowIcon color="#AC643E" />
-            </button>
+             {/* Кнопка Instagram */}
+             <button className="instagram-button">
+  <span></span>
+  <img src={`${process.env.PUBLIC_URL}/assets/icons/button-explore.svg`} alt="Explore Instagram" />
+</button>
             <div className="instagram-photos">
-            <img src="/images/ins1.jpg" alt=" " />
-            <img src="/images/ins2.jpg" alt=" " />
-            <img src="/images/ins3.jpg" alt=" " />
+              <img src="/images/ins1.jpg" alt=" " />
+              <img src="/images/ins2.jpg" alt=" " />
+              <img src="/images/ins3.jpg" alt=" " />
             </div>
           </div>
         </div>

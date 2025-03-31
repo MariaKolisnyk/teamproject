@@ -36,7 +36,7 @@ export const loginUser = async (credentials: { email: string; password: string }
  */
 export const getUserProfile = async () => {
   try {
-    const response = await axiosInstance.get('/user/profile/');
+    const response = await axiosInstance.get('/auth/profile/');
     return response.data;
   } catch (error: any) {
     console.error('❌ Error fetching user profile:', error.message);
@@ -51,7 +51,7 @@ export const getUserProfile = async () => {
  */
 export const updateUserProfile = async (profileData: Record<string, any>) => {
   try {
-    const response = await axiosInstance.put('/user/profile/', profileData);
+    const response = await axiosInstance.put('/auth/profile/', profileData);
     return response.data;
   } catch (error: any) {
     console.error('❌ Error updating user profile:', error.message);

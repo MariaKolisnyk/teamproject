@@ -23,7 +23,7 @@ const Profile: React.FC = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await axiosInstance.get('/user/profile/');
+        const response = await axiosInstance.get('/auth/profile/');
         setUser(response.data); // Заповнюємо поля профілю
       } catch (err) {
         setError('Failed to load profile data.');
@@ -39,7 +39,7 @@ const Profile: React.FC = () => {
   const handleProfileUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axiosInstance.put('/user/profile/update', user);
+      await axiosInstance.put('/auth/profile/', user);
       setMessage('Profile updated successfully!');
     } catch (err) {
       setError('Failed to update profile.');
@@ -50,7 +50,7 @@ const Profile: React.FC = () => {
   const handlePasswordChange = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await axiosInstance.post('/user/change-password', { newPassword });
+      await axiosInstance.post('/auth/change-password', { newPassword });
       setMessage('Password changed successfully!');
       setNewPassword('');
     } catch (err) {

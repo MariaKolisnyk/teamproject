@@ -1,6 +1,67 @@
 .homepage {
   font-family: 'Raleway', sans-serif; // Основний шрифт для сторінки
 }
+.carousel-arrow {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  
+  img {
+    width: 30px; /* розмір стрілок, можна налаштувати */
+    height: auto;
+  }
+
+  &:hover {
+    opacity: 0.7; /* ефект при наведенні */
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.shop-now-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 330px;  /* задаємо ширину */
+  height: 70px;  /* задаємо висоту */
+  padding: 0;
+
+  img {
+    max-width: 100%; /* Зображення займає всю ширину кнопки */
+    height: 100%;    /* Висота зображення відповідає висоті кнопки */
+  }
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+
+.instagram-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: transparent;
+  border: none;
+  cursor: pointer;
+  width: 600px;  /* задаємо ширину */
+  height: 70px;  /* задаємо висоту */
+  padding: 0;
+
+  img {
+    max-width: 100%; /* Зображення займає всю ширину кнопки */
+    height: 100%;    /* Висота зображення відповідає висоті кнопки */
+  }
+
+  &:hover {
+    opacity: 0.8; /* Зменшуємо яскравість при наведенні */
+  }
+}
 
 /* Загальний стиль для секцій сторінки */
 section {

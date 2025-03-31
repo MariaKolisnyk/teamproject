@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom'; // Навігація між сторінками
-import './CatalogPage.scss'; // Стилі сторінки
-import { useFavorites } from '../store/FavoritesContext'; // Контекст обраних товарів
-import { useCart } from '../store/CartContext'; // Контекст кошика
-import axiosInstance from '../utils/axiosInstance'; // Інстанс axios
+import { Link } from 'react-router-dom';
+import './CatalogPage.scss';
+import { useFavorites } from '../store/FavoritesContext';
+import { useCart } from '../store/CartContext';
+import axiosInstance from '../utils/axiosInstance';
 
-// **Інтерфейси**
+// Інтерфейси
 interface Color {
   id: number;
   name: string;
@@ -26,7 +26,6 @@ interface Product {
   id: number;
   name: string;
   imageUrl: string;
-  image?: string; // Поле для сумісності з кошиком
   price: number;
   isAvailable: boolean;
   brand: string;
@@ -39,9 +38,9 @@ interface Product {
 const CatalogPage: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [colors, setColors] = useState<Color[]>([]);
-  const [sizes, setSizes] = useState<Size[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [colors, setColors] = useState<Color[]>([]); // Стан для кольорів
+  const [sizes, setSizes] = useState<Size[]>([]); // Стан для розмірів
+  const [categories, setCategories] = useState<Category[]>([]); // Стан для категорій
   const [selectedColor, setSelectedColor] = useState<string | 'All'>('All');
   const [selectedSize, setSelectedSize] = useState<string | 'All'>('All');
   const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
@@ -51,63 +50,46 @@ const CatalogPage: React.FC = () => {
   const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
   const { addToCart } = useCart();
 
-  // **Отримання кольорів з API**
-  const fetchColors = async () => {
+  // Отримання кольорів, розмірів та категорій з API
+  const fetchFilters = async () => {
     try {
-      const response = await axiosInstance.get('/color/');
-      const colorData = Array.isArray(response.data) ? response.data : [];
-      setColors(colorData);
+      const [colorResponse, sizeResponse, categoryResponse] = await Promise.all([
+        axiosInstance.get('/color/'),
+        axiosInstance.get('/size/'),
+        axiosInstance.get('/categories/')
+      ]);
+
+      // Перевірка, чи отримані дані для кольорів є масивом
+      if (Array.isArray(colorResponse.data.results)) {
+        setColors(colorResponse.data.results);
+      } else {
+        setColors([]); // Якщо дані не масив, зберігаємо порожній масив
+        console.error('Colors data is not an array');
+      }
+
+      setSizes(sizeResponse.data);
+      setCategories(categoryResponse.data);
     } catch (err) {
-      console.error('Error fetching colors:', err);
-      setColors([]); // У разі помилки встановлюємо порожній масив
+      setColors([]); // У разі помилки обнуляємо стан кольорів
+      console.error('Error fetching filters:', err);
     }
   };
 
-  // **Отримання розмірів з API**
-  const fetchSizes = async () => {
-    try {
-      const response = await axiosInstance.get('/size/');
-      const sizeData = Array.isArray(response.data) ? response.data : [];
-      setSizes(sizeData);
-    } catch (err) {
-      console.error('Error fetching sizes:', err);
-      setSizes([]); // У разі помилки встановлюємо порожній масив
-    }
-  };
-
-  // **Отримання категорій з API**
-  const fetchCategories = async () => {
-    try {
-      const response = await axiosInstance.get('/categories/');
-      const categoryData = Array.isArray(response.data) ? response.data : [];
-      setCategories(categoryData);
-    } catch (err) {
-      console.error('Error fetching categories:', err);
-      setCategories([]); // У разі помилки встановлюємо порожній масив
-    }
-  };
-
-  // **Отримання товарів з API**
+  // Отримання товарів з API
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get<Product[]>('/products/');
-      const updatedProducts = response.data.map((product) => ({
-        ...product,
-        image: product.imageUrl,
-        quantity: 1,
-      }));
-      setProducts(updatedProducts);
-      setFilteredProducts(updatedProducts);
+      setProducts(response.data);
+      setFilteredProducts(response.data);
     } catch (err) {
-      console.error('Error fetching products:', err);
       setError('Failed to load products.');
     } finally {
       setLoading(false);
     }
   };
 
-  // **Фільтрація товарів**
+  // Фільтрація товарів за вибором
   useEffect(() => {
     let filtered = products;
 
@@ -126,26 +108,23 @@ const CatalogPage: React.FC = () => {
     setFilteredProducts(filtered);
   }, [selectedColor, selectedSize, selectedCategory, products]);
 
-  // **Завантаження даних при першому рендері**
+  // Завантаження даних при першому рендері
   useEffect(() => {
-    fetchColors();
-    fetchSizes();
-    fetchCategories();
+    fetchFilters();
     fetchProducts();
   }, []);
 
   return (
     <div className="catalog-page">
-      <h1 className="catalog-title">Catalog</h1>
+      <h1 className="catalog-title">Catalog of Sets</h1>
 
-      {/* 🔥 **Фільтри** */}
+      {/* Фільтри */}
       <div className="filters">
-        {/* Фільтр за кольором */}
         <div className="filter-section">
           <h4>Color</h4>
           <select value={selectedColor} onChange={(e) => setSelectedColor(e.target.value)}>
             <option value="All">All Colors</option>
-            {colors.map((color) => (
+            {Array.isArray(colors) && colors.map((color) => (
               <option key={color.id} value={color.name}>
                 {color.name}
               </option>
@@ -153,7 +132,6 @@ const CatalogPage: React.FC = () => {
           </select>
         </div>
 
-        {/* Фільтр за розміром */}
         <div className="filter-section">
           <h4>Size</h4>
           <select value={selectedSize} onChange={(e) => setSelectedSize(e.target.value)}>
@@ -166,7 +144,6 @@ const CatalogPage: React.FC = () => {
           </select>
         </div>
 
-        {/* Фільтр за категорією */}
         <div className="filter-section">
           <h4>Category</h4>
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
@@ -180,11 +157,11 @@ const CatalogPage: React.FC = () => {
         </div>
       </div>
 
-      {/* 🔥 **Стан завантаження або помилка** */}
+      {/* Стан завантаження або помилка */}
       {loading && <p>Loading products...</p>}
       {error && <p className="error-message">{error}</p>}
 
-      {/* 🔥 **Відображення товарів** */}
+      {/* Відображення товарів */}
       <div className="product-grid">
         {filteredProducts.length > 0 ? (
           filteredProducts.map((product) => (
@@ -192,12 +169,7 @@ const CatalogPage: React.FC = () => {
               <img src={product.imageUrl} alt={product.name} />
               <h3>{product.name}</h3>
               <p>${product.price.toFixed(2)}</p>
-
-              <p><strong>Color:</strong> {product.color || 'N/A'}</p>
-              <p><strong>Size:</strong> {product.size || 'N/A'}</p>
-
               <div className="product-actions">
-                {/* ❤️ Додавання до обраного */}
                 <button
                   className={`favorite-button ${favorites.some((fav) => fav.id === product.id) ? 'favorited' : ''}`}
                   onClick={() =>
@@ -208,12 +180,7 @@ const CatalogPage: React.FC = () => {
                 >
                   ❤
                 </button>
-
-                {/* 🛒 Додавання до кошика */}
-                <button
-                  className="add-to-cart-button"
-                  onClick={() => addToCart({ ...product, image: product.imageUrl, quantity: 1 })}
-                >
+                <button className="add-to-cart-button" onClick={() => addToCart({ ...product, image: product.imageUrl, quantity: 1 })}>
                   Add to Cart
                 </button>
               </div>
@@ -222,6 +189,11 @@ const CatalogPage: React.FC = () => {
         ) : (
           <p className="no-products">No products found.</p>
         )}
+      </div>
+
+      {/* Банер перед футером */}
+      <div className="banner">
+        <img src="/images/banner.png" alt="Banner" />
       </div>
     </div>
   );
