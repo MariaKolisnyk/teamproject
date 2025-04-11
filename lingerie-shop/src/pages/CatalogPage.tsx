@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import './CatalogPage.scss';
-import { useFavorites } from '../store/FavoritesContext';
-import { useCart } from '../store/CartContext';
-import axiosInstance from '../utils/axiosInstance';
+import { useFavorites } from '../store/FavoritesContext'; // Імпорт контексту обраних товарів
+import { useCart } from '../store/CartContext'; // Імпорт контексту кошика
+import axiosInstance from '../utils/axiosInstance'; // Інстанс axios
 
-// Інтерфейси
+// **Інтерфейси**
 interface Color {
   id: number;
   name: string;
@@ -36,21 +35,21 @@ interface Product {
 }
 
 const CatalogPage: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-  const [colors, setColors] = useState<Color[]>([]); // Стан для кольорів
-  const [sizes, setSizes] = useState<Size[]>([]); // Стан для розмірів
-  const [categories, setCategories] = useState<Category[]>([]); // Стан для категорій
-  const [selectedColor, setSelectedColor] = useState<string | 'All'>('All');
-  const [selectedSize, setSelectedSize] = useState<string | 'All'>('All');
-  const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All');
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [products, setProducts] = useState<Product[]>([]); // Список продуктів
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]); // Фільтровані продукти
+  const [colors, setColors] = useState<Color[]>([]); // Кольори
+  const [sizes, setSizes] = useState<Size[]>([]); // Розміри
+  const [categories, setCategories] = useState<Category[]>([]); // Категорії
+  const [selectedColor, setSelectedColor] = useState<string | 'All'>('All'); // Вибір кольору
+  const [selectedSize, setSelectedSize] = useState<string | 'All'>('All'); // Вибір розміру
+  const [selectedCategory, setSelectedCategory] = useState<string | 'All'>('All'); // Вибір категорії
+  const [loading, setLoading] = useState(true); // Стан завантаження
+  const [error, setError] = useState<string | null>(null); // Стан помилки
 
-  const { favorites, addToFavorites, removeFromFavorites } = useFavorites();
-  const { addToCart } = useCart();
+  const { favorites, addToFavorites, removeFromFavorites } = useFavorites(); // Функції для роботи з обраними товарами
+  const { addToCart } = useCart(); // Функція для роботи з кошиком
 
-  // Отримання кольорів, розмірів та категорій з API
+  // Отримуємо кольори, розміри, категорії з API
   const fetchFilters = async () => {
     try {
       const [colorResponse, sizeResponse, categoryResponse] = await Promise.all([
@@ -58,30 +57,28 @@ const CatalogPage: React.FC = () => {
         axiosInstance.get('/size/'),
         axiosInstance.get('/categories/')
       ]);
-
-      // Перевірка, чи отримані дані для кольорів є масивом
-      if (Array.isArray(colorResponse.data.results)) {
-        setColors(colorResponse.data.results);
-      } else {
-        setColors([]); // Якщо дані не масив, зберігаємо порожній масив
-        console.error('Colors data is not an array');
+      if (Array.isArray(colorResponse.data)) {
+        setColors(colorResponse.data);
       }
-
-      setSizes(sizeResponse.data);
-      setCategories(categoryResponse.data);
+      if (Array.isArray(sizeResponse.data)) {
+        setSizes(sizeResponse.data);
+      }
+      if (Array.isArray(categoryResponse.data)) {
+        setCategories(categoryResponse.data);
+      }
     } catch (err) {
-      setColors([]); // У разі помилки обнуляємо стан кольорів
       console.error('Error fetching filters:', err);
     }
   };
 
-  // Отримання товарів з API
+  // Отримуємо продукти з API
   const fetchProducts = async () => {
     try {
       setLoading(true);
       const response = await axiosInstance.get<Product[]>('/products/');
+      console.log("Fetched Products: ", response.data);  // Додаємо перевірку, чи приходять продукти
       setProducts(response.data);
-      setFilteredProducts(response.data);
+      setFilteredProducts(response.data); // Задаємо фільтровані продукти одразу після завантаження
     } catch (err) {
       setError('Failed to load products.');
     } finally {
@@ -89,7 +86,7 @@ const CatalogPage: React.FC = () => {
     }
   };
 
-  // Фільтрація товарів за вибором
+  // Фільтруємо продукти на основі вибору
   useEffect(() => {
     let filtered = products;
 
@@ -108,7 +105,7 @@ const CatalogPage: React.FC = () => {
     setFilteredProducts(filtered);
   }, [selectedColor, selectedSize, selectedCategory, products]);
 
-  // Завантаження даних при першому рендері
+  // Завантажуємо дані при першому рендері
   useEffect(() => {
     fetchFilters();
     fetchProducts();
@@ -124,11 +121,15 @@ const CatalogPage: React.FC = () => {
           <h4>Color</h4>
           <select value={selectedColor} onChange={(e) => setSelectedColor(e.target.value)}>
             <option value="All">All Colors</option>
-            {Array.isArray(colors) && colors.map((color) => (
-              <option key={color.id} value={color.name}>
-                {color.name}
-              </option>
-            ))}
+            {colors.length > 0 ? (
+              colors.map((color) => (
+                <option key={color.id} value={color.name}>
+                  {color.name}
+                </option>
+              ))
+            ) : (
+              <option value="All">No colors available</option>
+            )}
           </select>
         </div>
 
@@ -136,11 +137,15 @@ const CatalogPage: React.FC = () => {
           <h4>Size</h4>
           <select value={selectedSize} onChange={(e) => setSelectedSize(e.target.value)}>
             <option value="All">All Sizes</option>
-            {sizes.map((size) => (
-              <option key={size.id} value={size.name}>
-                {size.name}
-              </option>
-            ))}
+            {sizes.length > 0 ? (
+              sizes.map((size) => (
+                <option key={size.id} value={size.name}>
+                  {size.name}
+                </option>
+              ))
+            ) : (
+              <option value="All">No sizes available</option>
+            )}
           </select>
         </div>
 
@@ -148,11 +153,15 @@ const CatalogPage: React.FC = () => {
           <h4>Category</h4>
           <select value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <option value="All">All Categories</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.name}>
-                {category.name}
-              </option>
-            ))}
+            {categories.length > 0 ? (
+              categories.map((category) => (
+                <option key={category.id} value={category.name}>
+                  {category.name}
+                </option>
+              ))
+            ) : (
+              <option value="All">No categories available</option>
+            )}
           </select>
         </div>
       </div>
@@ -180,7 +189,10 @@ const CatalogPage: React.FC = () => {
                 >
                   ❤
                 </button>
-                <button className="add-to-cart-button" onClick={() => addToCart({ ...product, image: product.imageUrl, quantity: 1 })}>
+                <button
+                  className="add-to-cart-button"
+                  onClick={() => addToCart({ ...product, image: product.imageUrl, quantity: 1 })}
+                >
                   Add to Cart
                 </button>
               </div>
